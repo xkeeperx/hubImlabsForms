@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Formulario de Onboarding - Imlabs</title>
+    <title>Onboarding Form - Imlabs</title>
     <link rel="stylesheet" href="/css/form.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -22,11 +22,11 @@
             </a>
             
             <ul class="nav-links" id="navLinks">
-                <li><a href="/" class="nav-link">Inicio</a></li>
-                <li><a href="/form.html" class="nav-link nav-link-active">Formulario</a></li>
+                <li><a href="/" class="nav-link">Home</a></li>
+                <li><a href="/form.html" class="nav-link nav-link-active">Form</a></li>
             </ul>
 
-            <button class="hamburger" id="hamburger" aria-label="Menú">
+            <button class="hamburger" id="hamburger" aria-label="Menu">
                 <span></span>
                 <span></span>
                 <span></span>
@@ -38,15 +38,15 @@
     <main class="form-page">
         <div class="container">
             <div class="form-header">
-                <h1 class="form-title">Formulario de Onboarding</h1>
-                <p class="form-subtitle">Completa el proceso de registro para tu tienda</p>
+                <h1 class="form-title">Onboarding Form</h1>
+                <p class="form-subtitle">Complete the registration process for your store</p>
             </div>
 
             <!-- Store Search Section -->
             <section class="search-section">
                 <div class="search-container">
-                    <h2 class="search-title">Buscar Tienda</h2>
-                    <p class="search-description">Ingresa el número de tu tienda para comenzar el proceso</p>
+                    <h2 class="search-title">Search Store</h2>
+                    <p class="search-description">Enter your store number to begin the process</p>
                     
                     <form class="search-form" id="searchForm">
                         <div class="search-input-wrapper">
@@ -58,13 +58,13 @@
                                 type="text" 
                                 id="storeInput" 
                                 class="search-input" 
-                                placeholder="Número de tienda" 
+                                placeholder="Store number"
                                 required
                                 autocomplete="off"
                             >
                         </div>
                         <button type="submit" class="btn btn-primary" id="searchBtn">
-                            <span class="btn-text">Buscar Tienda</span>
+                            <span class="btn-text">Search Store</span>
                             <span class="btn-loader" style="display: none;"></span>
                         </button>
                     </form>
@@ -92,28 +92,28 @@
                             <path d="M20 20v20"/>
                             <path d="M28 20v20"/>
                         </svg>
-                        <h3 class="store-card-title">Tienda Encontrada</h3>
+                        <h3 class="store-card-title">Store Found</h3>
                     </div>
                     <div class="store-card-body">
                         <div class="store-info-row">
-                            <span class="store-info-label">Nombre:</span>
+                            <span class="store-info-label">Name:</span>
                             <span class="store-info-value" id="storeName">-</span>
                         </div>
                         <div class="store-info-row">
-                            <span class="store-info-label">Número:</span>
+                            <span class="store-info-label">Number:</span>
                             <span class="store-info-value" id="storeNumber">-</span>
                         </div>
                         <div class="store-info-row">
-                            <span class="store-info-label">Estado:</span>
-                            <span class="store-info-value store-status-pending">Pendiente</span>
+                            <span class="store-info-label">Status:</span>
+                            <span class="store-info-value store-status-pending">Pending</span>
                         </div>
                     </div>
                     <div class="store-card-actions">
                         <button class="btn btn-primary btn-block" id="selectStoreBtn">
-                            Seleccionar esta tienda
+                            Select this store
                         </button>
                         <button class="btn btn-secondary btn-block" id="cancelStoreBtn">
-                            Buscar otra tienda
+                            Search another store
                         </button>
                     </div>
                 </div>
@@ -130,7 +130,7 @@
                             </svg>
                         </div>
                         <div class="active-store-info">
-                            <span class="active-store-label">Tienda seleccionada:</span>
+                            <span class="active-store-label">Selected store:</span>
                             <span class="active-store-name" id="activeStoreName">-</span>
                             <span class="active-store-number" id="activeStoreNumber">-</span>
                         </div>
@@ -140,7 +140,7 @@
                             <path d="M18.36 6.64a9 9 0 11-12.73 0"/>
                             <path d="M12 2v10"/>
                         </svg>
-                        Cambiar
+                        Change
                     </button>
                 </div>
             </section>
@@ -150,47 +150,47 @@
                 <form class="main-form" id="mainForm">
                     <!-- Personal Information -->
                     <div class="form-group">
-                        <h3 class="form-section-title">Información Personal</h3>
+                        <h3 class="form-section-title">Personal Information</h3>
                         
                         <div class="form-row">
                             <div class="form-field">
-                                <label for="firstName" class="form-label">Nombre *</label>
+                                <label for="firstName" class="form-label">First Name *</label>
                                 <input 
                                     type="text" 
                                     id="firstName" 
                                     name="firstName" 
                                     class="form-input" 
                                     required
-                                    placeholder="Tu nombre"
+                                    placeholder="Your first name"
                                 >
                             </div>
                             <div class="form-field">
-                                <label for="lastName" class="form-label">Apellido *</label>
+                                <label for="lastName" class="form-label">Last Name *</label>
                                 <input 
                                     type="text" 
                                     id="lastName" 
                                     name="lastName" 
                                     class="form-input" 
                                     required
-                                    placeholder="Tu apellido"
+                                    placeholder="Your last name"
                                 >
                             </div>
                         </div>
 
                         <div class="form-field">
-                            <label for="email" class="form-label">Correo Electrónico *</label>
+                            <label for="email" class="form-label">Email *</label>
                             <input 
                                 type="email" 
                                 id="email" 
                                 name="email" 
                                 class="form-input" 
                                 required
-                                placeholder="correo@ejemplo.com"
+                                placeholder="email@example.com"
                             >
                         </div>
 
                         <div class="form-field">
-                            <label for="phone" class="form-label">Teléfono *</label>
+                            <label for="phone" class="form-label">Phone *</label>
                             <input 
                                 type="tel" 
                                 id="phone" 
@@ -202,61 +202,61 @@
                         </div>
 
                         <div class="form-field">
-                            <label for="position" class="form-label">Cargo / Posición *</label>
+                            <label for="position" class="form-label">Position *</label>
                             <select id="position" name="position" class="form-select" required>
-                                <option value="">Selecciona tu cargo</option>
-                                <option value="gerente">Gerente</option>
-                                <option value="asistente">Asistente</option>
+                                <option value="">Select your position</option>
+                                <option value="manager">Manager</option>
+                                <option value="assistant">Assistant</option>
                                 <option value="supervisor">Supervisor</option>
-                                <option value="vendedor">Vendedor</option>
-                                <option value="otro">Otro</option>
+                                <option value="sales">Sales</option>
+                                <option value="other">Other</option>
                             </select>
                         </div>
                     </div>
 
                     <!-- Store Information -->
                     <div class="form-group">
-                        <h3 class="form-section-title">Información de la Tienda</h3>
+                        <h3 class="form-section-title">Store Information</h3>
                         
                         <div class="form-field">
-                            <label for="storeAddress" class="form-label">Dirección de la tienda *</label>
+                            <label for="storeAddress" class="form-label">Store Address *</label>
                             <input 
                                 type="text" 
                                 id="storeAddress" 
                                 name="storeAddress" 
                                 class="form-input" 
                                 required
-                                placeholder="Dirección completa"
+                                placeholder="Full address"
                             >
                         </div>
 
                         <div class="form-row">
                             <div class="form-field">
-                                <label for="city" class="form-label">Ciudad *</label>
+                                <label for="city" class="form-label">City *</label>
                                 <input 
                                     type="text" 
                                     id="city" 
                                     name="city" 
                                     class="form-input" 
                                     required
-                                    placeholder="Ciudad"
+                                    placeholder="City"
                                 >
                             </div>
                             <div class="form-field">
-                                <label for="region" class="form-label">Región/Departamento *</label>
+                                <label for="region" class="form-label">Region/State *</label>
                                 <input 
                                     type="text" 
                                     id="region" 
                                     name="region" 
                                     class="form-input" 
                                     required
-                                    placeholder="Región"
+                                    placeholder="Region"
                                 >
                             </div>
                         </div>
 
                         <div class="form-field">
-                            <label for="openDate" class="form-label">Fecha de apertura de la tienda</label>
+                            <label for="openDate" class="form-label">Store Opening Date</label>
                             <input 
                                 type="date" 
                                 id="openDate" 
@@ -268,28 +268,28 @@
 
                     <!-- Additional Information -->
                     <div class="form-group">
-                        <h3 class="form-section-title">Información Adicional</h3>
+                        <h3 class="form-section-title">Additional Information</h3>
                         
                         <div class="form-field">
-                            <label for="teamSize" class="form-label">Tamaño del equipo</label>
+                            <label for="teamSize" class="form-label">Team Size</label>
                             <select id="teamSize" name="teamSize" class="form-select">
-                                <option value="">Selecciona el tamaño</option>
-                                <option value="1-5">1-5 personas</option>
-                                <option value="6-10">6-10 personas</option>
-                                <option value="11-20">11-20 personas</option>
-                                <option value="21-50">21-50 personas</option>
-                                <option value="50+">Más de 50 personas</option>
+                                <option value="">Select team size</option>
+                                <option value="1-5">1-5 people</option>
+                                <option value="6-10">6-10 people</option>
+                                <option value="11-20">11-20 people</option>
+                                <option value="21-50">21-50 people</option>
+                                <option value="50+">More than 50 people</option>
                             </select>
                         </div>
 
                         <div class="form-field">
-                            <label for="comments" class="form-label">Comentarios adicionales</label>
+                            <label for="comments" class="form-label">Additional Comments</label>
                             <textarea 
                                 id="comments" 
                                 name="comments" 
                                 class="form-textarea" 
                                 rows="4"
-                                placeholder="Agrega cualquier información adicional relevante..."
+                                placeholder="Add any additional relevant information..."
                             ></textarea>
                         </div>
                     </div>
@@ -297,7 +297,7 @@
                     <!-- Form Actions -->
                     <div class="form-actions">
                         <button type="submit" class="btn btn-primary btn-large btn-block" id="submitBtn">
-                            <span class="btn-text">Guardar Información</span>
+                            <span class="btn-text">Save Information</span>
                             <span class="btn-loader" style="display: none;"></span>
                         </button>
                     </div>
@@ -313,12 +313,12 @@
                             <path d="M22 4L12 14.01l-3-3"/>
                         </svg>
                     </div>
-                    <h2 class="success-title">¡Información Guardada!</h2>
+                    <h2 class="success-title">Information Saved!</h2>
                     <p class="success-message">
-                        Los datos de tu tienda han sido guardados exitosamente. 
-                        El estado de tu tienda ha sido actualizado.
+                        Your store data has been successfully saved.
+                        Your store status has been updated.
                     </p>
-                    <a href="/" class="btn btn-primary">Volver al Inicio</a>
+                    <a href="/" class="btn btn-primary">Return to Home</a>
                 </div>
             </section>
         </div>
@@ -337,7 +337,7 @@
                 </a>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2024 Imlabs. Todos los derechos reservados.</p>
+                <p>&copy; 2024 Imlabs. All rights reserved.</p>
             </div>
         </div>
     </footer>

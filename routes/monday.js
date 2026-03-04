@@ -2,17 +2,17 @@ const express = require('express');
 const axios = require('axios');
 const router = express.Router();
 
-// Constantes de configuración desde variables de entorno
+// Configuration constants from environment variables
 const MONDAY_API_KEY = process.env.MONDAY_API_KEY;
 const MONDAY_BOARD_ID = process.env.MONDAY_BOARD_ID;
 const MONDAY_STATUS_COLUMN_ID = process.env.MONDAY_STATUS_COLUMN_ID;
 const MONDAY_STATUS_VALUE = process.env.MONDAY_STATUS_VALUE;
 const MONDAY_STORE_COLUMN_ID = process.env.MONDAY_STORE_COLUMN_ID;
 
-// URL base de la API de Monday.com
+// Base URL for Monday.com API
 const MONDAY_API_URL = 'https://api.monday.com/v2';
 
-// Headers comunes para todas las llamadas a Monday API
+// Common headers for all Monday API calls
 const getMondayHeaders = () => ({
   'Content-Type': 'application/json',
   'Authorization': MONDAY_API_KEY,
@@ -21,7 +21,7 @@ const getMondayHeaders = () => ({
 
 /**
  * GET /api/monday/search?store=VALUE
- * Busca una tienda por número de tienda que esté en estado "pendiente"
+ * Searches for a store by store number that is in "pending" status
  */
 router.get('/search', async (req, res) => {
   try {
@@ -30,11 +30,11 @@ router.get('/search', async (req, res) => {
     if (!storeNumber) {
       return res.status(400).json({
         found: false,
-        message: 'El número de tienda es requerido'
+        message: 'Store number is required'
       });
     }
 
-    // Query GraphQL para buscar items por número de tienda
+    // GraphQL query to search items by store number
     const query = `
       query {
         items_page_by_column_values(
@@ -62,12 +62,12 @@ router.get('/search', async (req, res) => {
 
     const items = response.data.data?.items_page_by_column_values?.items || [];
 
-    // Filtrar items que tengan estado "pendiente" (case-insensitive)
+    // Filter items with "pending" status (case-insensitive)
     const pendingItem = items.find(item => {
       const statusColumn = item.column_values.find(
         col => col.id === MONDAY_STATUS_COLUMN_ID
       );
-      return statusColumn && statusColumn.text.toLowerCase() === 'pendiente';
+      return statusColumn && statusColumn.text.toLowerCase() === 'pending';
     });
 
     if (pendingItem) {
@@ -85,35 +85,35 @@ router.get('/search', async (req, res) => {
 
     return res.json({
       found: false,
-      message: 'La tienda no fue encontrada o no está en estado pendiente.'
+      message: 'Store not found or not in pending status.'
     });
 
   } catch (error) {
-    console.error('Error al buscar tienda:', error.response?.data || error.message);
+    console.error('Error searching for store:', error.response?.data || error.message);
     return res.status(500).json({
       found: false,
-      message: 'Error al buscar la tienda. Por favor intenta nuevamente.'
+      message: 'Error searching for store. Please try again.'
     });
   }
 });
 
 /**
  * POST /api/monday/save
- * Guarda los datos del formulario en el item existente de Monday.com
+ * Saves form data to the existing Monday.com item
  */
 router.post('/save', async (req, res) => {
   try {
     const { itemId, fields } = req.body;
 
-    // Validación: itemId es obligatorio
+    // Validation: itemId is required
     if (!itemId) {
       return res.status(400).json({
         success: false,
-        message: 'El itemId es requerido'
+        message: 'itemId is required'
       });
     }
 
-    // Verificar que el item existe y sigue en estado "pendiente"
+    // Verify that the item exists and is still in "pending" status
     const verifyQuery = `
       query {
         items(ids: [${itemId}]) {
@@ -137,7 +137,7 @@ router.post('/save', async (req, res) => {
     if (!item) {
       return res.status(404).json({
         success: false,
-        message: 'Tienda no encontrada'
+        message: 'Store not found'
       });
     }
 
@@ -145,17 +145,17 @@ router.post('/save', async (req, res) => {
       col => col.id === MONDAY_STATUS_COLUMN_ID
     );
 
-    if (!statusColumn || statusColumn.text.toLowerCase() !== 'pendiente') {
+    if (!statusColumn || statusColumn.text.toLowerCase() !== 'pending') {
       return res.status(400).json({
         success: false,
-        message: 'Tienda no válida o no está en estado pendiente.'
+        message: 'Invalid store or not in pending status.'
       });
     }
 
-    // Construir el objeto de valores para la mutation
+    // Build values object for the mutation
     const columnValues = JSON.stringify(fields);
 
-    // Mutation para actualizar múltiples columnas
+    // Mutation to update multiple columns
     const updateMutation = `
       mutation {
         change_multiple_column_values(
@@ -172,7 +172,7 @@ router.post('/save', async (req, res) => {
       headers: getMondayHeaders()
     });
 
-    // Actualizar el estado al valor configurado
+    // Update status to the configured value
     const statusMutation = `
       mutation {
         change_column_value(
@@ -193,14 +193,14 @@ router.post('/save', async (req, res) => {
     return res.json({
       success: true,
       itemId: itemId,
-      message: 'Datos guardados exitosamente'
+      message: 'Data saved successfully'
     });
 
   } catch (error) {
-    console.error('Error al guardar datos:', error.response?.data || error.message);
+    console.error('Error saving data:', error.response?.data || error.message);
     return res.status(500).json({
       success: false,
-      message: 'Error al guardar los datos. Por favor intenta nuevamente.'
+      message: 'Error saving data. Please try again.'
     });
   }
 });

@@ -1,7 +1,7 @@
 {
   "name": "onboarding-form",
   "version": "1.0.0",
-  "description": "Proyecto web con landing page y formulario integrado con Monday.com",
+  "description": "Web project with landing page and form integrated with Monday.com",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

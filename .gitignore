@@ -1,8 +1,8 @@
-# Dependencias
+# Dependencies
 node_modules/
 package-lock.json
 
-# Variables de entorno
+# Environment variables
 .env
 
 # Logs
@@ -10,7 +10,7 @@ logs/
 *.log
 npm-debug.log*
 
-# Sistema operativo
+# Operating system
 .DS_Store
 Thumbs.db
 

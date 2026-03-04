@@ -1,199 +1,199 @@
-# Onboarding Form - Proyecto Web con Integración Monday.com
+# Onboarding Form - Web Project with Monday.com Integration
 
-Proyecto web completo listo para producción en un servidor Linux VPS (Ubuntu). Incluye una landing page pública y una aplicación de formulario integrada con Monday.com.
+Complete web project ready for production on a Linux VPS (Ubuntu) server. Includes a public landing page and a form application integrated with Monday.com.
 
-## 📋 Tabla de Contenidos
+## 📋 Table of Contents
 
-- [Stack Tecnológico](#stack-tecnológico)
-- [Requisitos Previos](#requisitos-previos)
-- [Instalación](#instalación)
-- [Configuración](#configuración)
-- [Desarrollo Local](#desarrollo-local)
-- [Despliegue en Producción](#despliegue-en-producción)
-- [Configuración de Nginx](#configuración-de-nginx)
-- [Cómo obtener los Column IDs de Monday.com](#cómo-obtener-los-column-ids-de-mondaycom)
-- [Estructura del Proyecto](#estructura-del-proyecto)
-
----
-
-## 🛠 Stack Tecnológico
-
-- **Backend:** Node.js con Express.js
-- **Frontend:** HTML5 + CSS3 + JavaScript Vanilla
-- **Gestor de procesos:** PM2 para producción
-- **Variables de entorno:** archivo `.env` con `dotenv`
-- **Dependencias clave:** `express`, `axios`, `dotenv`, `cors`, `morgan`
+- [Tech Stack](#tech-stack)
+- [Prerequisites](#prerequisites)
+- [Installation](#installation)
+- [Configuration](#configuration)
+- [Local Development](#local-development)
+- [Production Deployment](#production-deployment)
+- [Nginx Configuration](#nginx-configuration)
+- [How to Get Monday.com Column IDs](#how-to-get-mondaycom-column-ids)
+- [Project Structure](#project-structure)
 
 ---
 
-## 📦 Requisitos Previos
+## 🛠 Tech Stack
 
-- Node.js 18+ (LTS recomendado)
-- npm (viene incluido con Node.js)
-- Acceso a un servidor Linux VPS (Ubuntu) para producción
-- Cuenta de Monday.com con API access
+- **Backend:** Node.js with Express.js
+- **Frontend:** HTML5 + CSS3 + Vanilla JavaScript
+- **Process Manager:** PM2 for production
+- **Environment Variables:** `.env` file with `dotenv`
+- **Key Dependencies:** `express`, `axios`, `dotenv`, `cors`, `morgan`
 
 ---
 
-## 🚀 Instalación
+## 📦 Prerequisites
 
-1. **Clonar el repositorio:**
+- Node.js 18+ (LTS recommended)
+- npm (included with Node.js)
+- Access to a Linux VPS (Ubuntu) server for production
+- Monday.com account with API access
+
+---
+
+## 🚀 Installation
+
+1. **Clone the repository:**
 
 ```bash
 git clone <repo-url>
 cd onboarding-form
 ```
 
-2. **Instalar dependencias:**
+2. **Install dependencies:**
 
 ```bash
 npm install
 ```
 
-3. **Configurar variables de entorno:**
+3. **Configure environment variables:**
 
 ```bash
 cp .env.example .env
 ```
 
-4. **Editar el archivo `.env` con tus valores reales:**
+4. **Edit the `.env` file with your actual values:**
 
 ```env
 PORT=3000
-MONDAY_API_KEY=tu_api_key_aqui
+MONDAY_API_KEY=your_api_key_here
 MONDAY_BOARD_ID=123456789
-MONDAY_STATUS_COLUMN_ID=estado
-MONDAY_STATUS_VALUE=Completado
-MONDAY_STORE_COLUMN_ID=numero_tienda
+MONDAY_STATUS_COLUMN_ID=status
+MONDAY_STATUS_VALUE=Completed
+MONDAY_STORE_COLUMN_ID=store_number
 ```
 
 ---
 
-## ⚙️ Configuración
+## ⚙️ Configuration
 
-### Variables de Entorno
+### Environment Variables
 
-| Variable | Descripción |
+| Variable | Description |
 |----------|-------------|
-| `PORT` | Puerto donde correrá el servidor (default: 3000) |
-| `MONDAY_API_KEY` | Tu API token de Monday.com |
-| `MONDAY_BOARD_ID` | ID numérico del board de Monday.com |
-| `MONDAY_STATUS_COLUMN_ID` | Column ID de la columna "Estado" |
-| `MONDAY_STATUS_VALUE` | Valor del estado tras guardar (ej: "Completado") |
-| `MONDAY_STORE_COLUMN_ID` | Column ID de la columna "Número de Tienda" |
+| `PORT` | Port where the server will run (default: 3000) |
+| `MONDAY_API_KEY` | Your Monday.com API token |
+| `MONDAY_BOARD_ID` | Numeric ID of the Monday.com board |
+| `MONDAY_STATUS_COLUMN_ID` | Column ID of the "Status" column |
+| `MONDAY_STATUS_VALUE` | Status value after saving (e.g., "Completed") |
+| `MONDAY_STORE_COLUMN_ID` | Column ID of the "Store Number" column |
 
-### Mapeo de Campos del Formulario
+### Form Field Mapping
 
-En el archivo [`public/js/form.js`](public/js/form.js:1), debes actualizar el objeto `columnMapping` con los IDs de columna reales de tu board de Monday.com:
+In the [`public/js/form.js`](public/js/form.js:1) file, you need to update the `columnMapping` object with the actual column IDs from your Monday.com board:
 
 ```javascript
 const columnMapping = {
-    firstName: 'texto',           // Reemplaza con el ID de columna real
-    lastName: 'texto2',           // Reemplaza con el ID de columna real
-    email: 'email',               // Reemplaza con el ID de columna real
-    phone: 'telefono',            // Reemplaza con el ID de columna real
-    position: 'estado1',          // Reemplaza con el ID de columna real
-    storeAddress: 'texto4',       // Reemplaza con el ID de columna real
-    city: 'texto5',               // Reemplaza con el ID de columna real
-    region: 'texto6',             // Reemplaza con el ID de columna real
-    openDate: 'fecha',            // Reemplaza con el ID de columna real
-    teamSize: 'estado2',          // Reemplaza con el ID de columna real
-    comments: 'texto_largo'       // Reemplaza con el ID de columna real
+    firstName: 'texto',           // Replace with actual column ID
+    lastName: 'texto2',           // Replace with actual column ID
+    email: 'email',               // Replace with actual column ID
+    phone: 'telefono',            // Replace with actual column ID
+    position: 'estado1',          // Replace with actual column ID
+    storeAddress: 'texto4',       // Replace with actual column ID
+    city: 'texto5',               // Replace with actual column ID
+    region: 'texto6',             // Replace with actual column ID
+    openDate: 'fecha',            // Replace with actual column ID
+    teamSize: 'estado2',          // Replace with actual column ID
+    comments: 'texto_largo'       // Replace with actual column ID
 };
 ```
 
 ---
 
-## 💻 Desarrollo Local
+## 💻 Local Development
 
-Para ejecutar el servidor en modo desarrollo con recarga automática:
+To run the server in development mode with auto-reload:
 
 ```bash
 npm run dev
 ```
 
-El servidor estará disponible en `http://localhost:3000`
+The server will be available at `http://localhost:3000`
 
 ---
 
-## 🌐 Despliegue en Producción
+## 🌐 Production Deployment
 
-### 1. Instalar PM2 globalmente
+### 1. Install PM2 globally
 
-PM2 es un gestor de procesos para Node.js que mantiene tu aplicación corriendo en producción.
+PM2 is a process manager for Node.js that keeps your application running in production.
 
 ```bash
 npm install -g pm2
 ```
 
-### 2. Iniciar la aplicación con PM2
+### 2. Start the application with PM2
 
 ```bash
 pm2 start server.js --name "onboarding-form"
 ```
 
-### 3. Guardar la lista de procesos de PM2
+### 3. Save the PM2 process list
 
 ```bash
 pm2 save
 ```
 
-### 4. Configurar PM2 para iniciar automáticamente al reiniciar el servidor
+### 4. Configure PM2 to start automatically on server restart
 
 ```bash
 pm2 startup
 ```
 
-Este comando te mostrará un comando adicional que debes ejecutar. Por ejemplo:
+This command will show you an additional command to execute. For example:
 
 ```bash
-sudo env PATH=$PATH:/usr/bin pm2 startup systemd -u tu_usuario --hp /home/tu_usuario
+sudo env PATH=$PATH:/usr/bin pm2 startup systemd -u your_user --hp /home/your_user
 ```
 
-### 5. Comandos útiles de PM2
+### 5. Useful PM2 commands
 
 ```bash
-# Ver el estado de la aplicación
+# Check application status
 pm2 status
 
-# Ver logs en tiempo real
+# View logs in real-time
 pm2 logs onboarding-form
 
-# Reiniciar la aplicación
+# Restart the application
 pm2 restart onboarding-form
 
-# Detener la aplicación
+# Stop the application
 pm2 stop onboarding-form
 
-# Eliminar la aplicación de PM2
+# Remove the application from PM2
 pm2 delete onboarding-form
 ```
 
 ---
 
-## 🔧 Configuración de Nginx (Opcional pero Recomendado)
+## 🔧 Nginx Configuration (Optional but Recommended)
 
-Nginx puede actuar como reverse proxy para tu aplicación, proporcionando SSL, mejor rendimiento y seguridad.
+Nginx can act as a reverse proxy for your application, providing SSL, better performance, and security.
 
-### 1. Instalar Nginx
+### 1. Install Nginx
 
 ```bash
 sudo apt update
 sudo apt install nginx
 ```
 
-### 2. Crear un archivo de configuración para tu sitio
+### 2. Create a configuration file for your site
 
 ```bash
 sudo nano /etc/nginx/sites-available/onboarding-form
 ```
 
-### 3. Agregar la siguiente configuración:
+### 3. Add the following configuration:
 
 ```nginx
 server {
     listen 80;
-    server_name tu-dominio.com www.tu-dominio.com;
+    server_name your-domain.com www.your-domain.com;
 
     location / {
         proxy_pass http://localhost:3000;
@@ -209,52 +209,52 @@ server {
 }
 ```
 
-### 4. Habilitar el sitio
+### 4. Enable the site
 
 ```bash
 sudo ln -s /etc/nginx/sites-available/onboarding-form /etc/nginx/sites-enabled/
 ```
 
-### 5. Verificar la configuración de Nginx
+### 5. Verify Nginx configuration
 
 ```bash
 sudo nginx -t
 ```
 
-### 6. Reiniciar Nginx
+### 6. Restart Nginx
 
 ```bash
 sudo systemctl restart nginx
 ```
 
-### 7. Configurar SSL con Let's Encrypt (Opcional)
+### 7. Configure SSL with Let's Encrypt (Optional)
 
 ```bash
 sudo apt install certbot python3-certbot-nginx
-sudo certbot --nginx -d tu-dominio.com -d www.tu-dominio.com
+sudo certbot --nginx -d your-domain.com -d www.your-domain.com
 ```
 
 ---
 
-## 🔑 Cómo obtener los Column IDs de Monday.com
+## 🔑 How to Get Monday.com Column IDs
 
-### Obtener el Board ID
+### Get the Board ID
 
-1. Abre tu board en Monday.com
-2. El Board ID es el número que aparece en la URL después de `/boards/`
-   - Ejemplo: `https://monday.com/boards/123456789` → Board ID: `123456789`
+1. Open your board on Monday.com
+2. The Board ID is the number that appears in the URL after `/boards/`
+   - Example: `https://monday.com/boards/123456789` → Board ID: `123456789`
 
-### Obtener los Column IDs
+### Get the Column IDs
 
-#### Método 1: Usando la API de Monday.com
+#### Method 1: Using the Monday.com API
 
-1. Ve a [Monday.com Developers](https://developer.monday.com/api-reference/docs/graphql-api)
-2. Usa el API Playground con tu API token
-3. Ejecuta la siguiente query:
+1. Go to [Monday.com Developers](https://developer.monday.com/api-reference/docs/graphql-api)
+2. Use the API Playground with your API token
+3. Run the following query:
 
 ```graphql
 query {
-  boards(ids: [TU_BOARD_ID]) {
+  boards(ids: [YOUR_BOARD_ID]) {
     columns {
       id
       title
@@ -264,7 +264,7 @@ query {
 }
 ```
 
-4. La respuesta te mostrará todos los IDs de columna con sus títulos:
+4. The response will show all column IDs with their titles:
 
 ```json
 {
@@ -274,12 +274,12 @@ query {
         "columns": [
           {
             "id": "texto",
-            "title": "Nombre",
+            "title": "Name",
             "type": "text"
           },
           {
             "id": "email",
-            "title": "Correo Electrónico",
+            "title": "Email",
             "type": "email"
           }
         ]
@@ -289,86 +289,86 @@ query {
 }
 ```
 
-#### Método 2: Usando las herramientas de desarrollador del navegador
+#### Method 2: Using browser developer tools
 
-1. Abre tu board en Monday.com
-2. Presiona F12 para abrir las herramientas de desarrollador
-3. Ve a la pestaña "Network"
-4. Haz alguna acción en el board (como cambiar una celda)
-5. Busca una solicitud GraphQL en la red
-6. En la respuesta, busca los IDs de columna
+1. Open your board on Monday.com
+2. Press F12 to open developer tools
+3. Go to the "Network" tab
+4. Make an action on the board (like changing a cell)
+5. Look for a GraphQL request in the network
+6. In the response, look for the column IDs
 
-### Obtener tu API Key de Monday.com
+### Get your Monday.com API Key
 
-1. Ve a monday.com e inicia sesión
-2. Haz clic en tu avatar en la esquina superior izquierda
-3. Selecciona "Developers"
-4. En la sección "API tokens", haz clic en "Copy" para copiar tu token
-5. Pega este token en tu archivo `.env` como `MONDAY_API_KEY`
+1. Go to monday.com and log in
+2. Click on your avatar in the top left corner
+3. Select "Developers"
+4. In the "API tokens" section, click "Copy" to copy your token
+5. Paste this token in your `.env` file as `MONDAY_API_KEY`
 
 ---
 
-## 📁 Estructura del Proyecto
+## 📁 Project Structure
 
 ```
 /onboarding-form
 │
-├── server.js                  # Servidor principal Express
-├── .env                       # Variables de entorno (NO subir a git)
-├── .env.example               # Ejemplo de variables sin valores sensibles
-├── .gitignore                 # Archivos ignorados por git
-├── package.json               # Dependencias del proyecto
-├── README.md                  # Este archivo
+├── server.js                  # Main Express server
+├── .env                       # Environment variables (DO NOT commit to git)
+├── .env.example               # Example variables without sensitive values
+├── .gitignore                 # Files ignored by git
+├── package.json               # Project dependencies
+├── README.md                  # This file
 │
-├── /public                    # Archivos estáticos servidos por Express
+├── /public                    # Static files served by Express
 │   ├── index.html             # Landing page
-│   ├── form.html              # Página del formulario
+│   ├── form.html              # Form page
 │   ├── /css
-│   │   ├── styles.css         # Estilos globales y landing
-│   │   └── form.css           # Estilos del formulario
+│   │   ├── styles.css         # Global styles and landing
+│   │   └── form.css           # Form styles
 │   └── /js
-│       ├── main.js            # JS de la landing
-│       └── form.js            # Lógica del formulario + fetch al backend
+│       ├── main.js            # Landing page JS
+│       └── form.js            # Form logic + API calls
 │
 └── /routes
-    └── monday.js              # Rutas API para Monday.com
+    └── monday.js              # API routes for Monday.com
 ```
 
 ---
 
-## 🔒 Seguridad
+## 🔒 Security
 
-- **Nunca** expongas la API Key de Monday.com en el frontend
-- El archivo `.env` está incluido en `.gitignore` para no ser subido a git
-- Asegúrate de configurar HTTPS en producción usando Nginx con Let's Encrypt
-- Mantén tus dependencias actualizadas: `npm audit fix`
-
----
-
-## 📝 Notas Adicionales
-
-### Flujo del Formulario
-
-1. **Búsqueda de Tienda:** El usuario ingresa el número de tienda
-2. **Validación:** El backend busca en Monday.com una tienda con ese número y estado "pendiente"
-3. **Selección:** Si se encuentra, el usuario confirma la selección
-4. **Formulario:** Se muestra el formulario completo para diligenciar
-5. **Guardado:** Los datos se envían al backend que actualiza el item en Monday.com y cambia el estado
-
-### Personalización
-
-- Los colores y estilos se pueden personalizar fácilmente modificando las variables CSS en [`public/css/styles.css`](public/css/styles.css:1) y [`public/css/form.css`](public/css/form.css:1)
-- El contenido de las cards de servicios se puede editar en [`public/index.html`](public/index.html:1)
-- Los campos del formulario se pueden modificar en [`public/form.html`](public/form.html:1)
+- **Never** expose the Monday.com API Key in the frontend
+- The `.env` file is included in `.gitignore` to prevent it from being committed to git
+- Make sure to configure HTTPS in production using Nginx with Let's Encrypt
+- Keep your dependencies updated: `npm audit fix`
 
 ---
 
-## 📄 Licencia
+## 📝 Additional Notes
+
+### Form Flow
+
+1. **Store Search:** User enters the store number
+2. **Validation:** Backend searches Monday.com for a store with that number and "pending" status
+3. **Selection:** If found, user confirms the selection
+4. **Form:** Complete form is displayed to fill out
+5. **Saving:** Data is sent to backend which updates the item in Monday.com and changes the status
+
+### Customization
+
+- Colors and styles can be easily customized by modifying CSS variables in [`public/css/styles.css`](public/css/styles.css:1) and [`public/css/form.css`](public/css/form.css:1)
+- Service cards content can be edited in [`public/index.html`](public/index.html:1)
+- Form fields can be modified in [`public/form.html`](public/form.html:1)
+
+---
+
+## 📄 License
 
 ISC
 
 ---
 
-## 🤝 Soporte
+## 🤝 Support
 
-Para problemas o preguntas, por favor abre un issue en el repositorio o contacta al equipo de desarrollo.
+For issues or questions, please open an issue in the repository or contact the development team.

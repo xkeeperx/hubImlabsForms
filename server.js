@@ -4,7 +4,7 @@ const path = require('path');
 const morgan = require('morgan');
 const cors = require('cors');
 
-// Importar rutas
+// Import routes
 const mondayRoutes = require('./routes/monday');
 
 const app = express();
@@ -16,13 +16,13 @@ app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Servir archivos estáticos desde /public
+// Serve static files from /public
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Rutas API
+// API routes
 app.use('/api/monday', mondayRoutes);
 
-// Rutas para SPA (Single Page Application) - redirigir todo a index.html
+// Routes for SPA (Single Page Application) - redirect everything to index.html
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
@@ -31,24 +31,24 @@ app.get('/form.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'form.html'));
 });
 
-// Manejo de errores 404
+// 404 error handling
 app.use((req, res) => {
-  res.status(404).json({ error: 'Ruta no encontrada' });
+  res.status(404).json({ error: 'Route not found' });
 });
 
-// Manejo de errores global
+// Global error handling
 app.use((err, req, res, next) => {
   console.error('Error:', err.stack);
   res.status(500).json({
-    error: 'Error interno del servidor',
+    error: 'Internal server error',
     message: process.env.NODE_ENV === 'development' ? err.message : undefined
   });
 });
 
-// Iniciar servidor
+// Start server
 app.listen(PORT, () => {
-  console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
-  console.log(`📁 Archivos estáticos servidos desde: ${path.join(__dirname, 'public')}`);
+  console.log(`🚀 Server running on http://localhost:${PORT}`);
+  console.log(`📁 Static files served from: ${path.join(__dirname, 'public')}`);
 });
 
 module.exports = app;

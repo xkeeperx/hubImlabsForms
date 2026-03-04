@@ -88,7 +88,7 @@ function initSearchForm() {
         const storeNumber = elements.storeInput.value.trim();
         
         if (!storeNumber) {
-            showStatusMessage('Por favor ingresa un número de tienda', 'error');
+            showStatusMessage('Please enter a store number', 'error');
             return;
         }
         
@@ -101,7 +101,7 @@ async function searchStore(storeNumber) {
     
     state.isSearching = true;
     setButtonLoading(elements.searchBtn, true);
-    showStatusMessage('Buscando tienda...', 'info');
+    showStatusMessage('Searching store...', 'info');
     
     try {
         const response = await fetch(`/api/monday/search?store=${encodeURIComponent(storeNumber)}`);
@@ -128,12 +128,12 @@ async function searchStore(storeNumber) {
             elements.successSection.style.display = 'none';
         } else {
             // Store not found or not pending
-            showStatusMessage(data.message || 'La tienda no fue encontrada o no está en estado pendiente.', 'error');
+            showStatusMessage(data.message || 'Store not found or not in pending status.', 'error');
             elements.storeSelection.style.display = 'none';
         }
     } catch (error) {
         console.error('Error searching store:', error);
-        showStatusMessage('Error al buscar la tienda. Por favor intenta nuevamente.', 'error');
+        showStatusMessage('Error searching for store. Please try again.', 'error');
     } finally {
         state.isSearching = false;
         setButtonLoading(elements.searchBtn, false);
@@ -232,7 +232,7 @@ function initMainForm() {
         });
         
         if (!isValid) {
-            showStatusMessage('Por favor completa todos los campos requeridos correctamente.', 'error');
+            showStatusMessage('Please complete all required fields correctly.', 'error');
             return;
         }
         
@@ -345,11 +345,11 @@ async function submitForm() {
             elements.activeStore.style.display = 'none';
             elements.successSection.style.display = 'block';
         } else {
-            showStatusMessage(data.message || 'Error al guardar los datos. Por favor intenta nuevamente.', 'error');
+            showStatusMessage(data.message || 'Error saving data. Please try again.', 'error');
         }
     } catch (error) {
         console.error('Error submitting form:', error);
-        showStatusMessage('Error al guardar los datos. Por favor intenta nuevamente.', 'error');
+        showStatusMessage('Error saving data. Please try again.', 'error');
     } finally {
         state.isSaving = false;
         setButtonLoading(elements.submitBtn, false);
