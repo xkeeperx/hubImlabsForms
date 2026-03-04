@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulario de Onboarding - Imlabs</title>
+    <link rel="stylesheet" href="/css/form.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar" id="navbar">
+        <div class="container navbar-container">
+            <a href="/" class="logo">
+                <svg class="logo-icon" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="20" cy="20" r="18" stroke="currentColor" stroke-width="3"/>
+                    <path d="M13 20L18 25L27 15" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>IMLABS</span>
+            </a>
+            
+            <ul class="nav-links" id="navLinks">
+                <li><a href="/" class="nav-link">Inicio</a></li>
+                <li><a href="/form.html" class="nav-link nav-link-active">Formulario</a></li>
+            </ul>
+
+            <button class="hamburger" id="hamburger" aria-label="Menú">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="form-page">
+        <div class="container">
+            <div class="form-header">
+                <h1 class="form-title">Formulario de Onboarding</h1>
+                <p class="form-subtitle">Completa el proceso de registro para tu tienda</p>
+            </div>
+
+            <!-- Store Search Section -->
+            <section class="search-section">
+                <div class="search-container">
+                    <h2 class="search-title">Buscar Tienda</h2>
+                    <p class="search-description">Ingresa el número de tu tienda para comenzar el proceso</p>
+                    
+                    <form class="search-form" id="searchForm">
+                        <div class="search-input-wrapper">
+                            <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="11" cy="11" r="8"/>
+                                <path d="M21 21l-4.35-4.35"/>
+                            </svg>
+                            <input 
+                                type="text" 
+                                id="storeInput" 
+                                class="search-input" 
+                                placeholder="Número de tienda" 
+                                required
+                                autocomplete="off"
+                            >
+                        </div>
+                        <button type="submit" class="btn btn-primary" id="searchBtn">
+                            <span class="btn-text">Buscar Tienda</span>
+                            <span class="btn-loader" style="display: none;"></span>
+                        </button>
+                    </form>
+
+                    <!-- Status Messages -->
+                    <div class="status-message" id="statusMessage" style="display: none;">
+                        <div class="status-content">
+                            <svg class="status-icon status-icon-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/>
+                                <path d="M12 16v-4M12 8h.01"/>
+                            </svg>
+                            <span class="status-text"></span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Store Selection Card -->
+            <section class="store-selection" id="storeSelection" style="display: none;">
+                <div class="store-card">
+                    <div class="store-card-header">
+                        <svg class="store-icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M4 20h40v20H4z"/>
+                            <path d="M8 20V8h32v12"/>
+                            <path d="M20 20v20"/>
+                            <path d="M28 20v20"/>
+                        </svg>
+                        <h3 class="store-card-title">Tienda Encontrada</h3>
+                    </div>
+                    <div class="store-card-body">
+                        <div class="store-info-row">
+                            <span class="store-info-label">Nombre:</span>
+                            <span class="store-info-value" id="storeName">-</span>
+                        </div>
+                        <div class="store-info-row">
+                            <span class="store-info-label">Número:</span>
+                            <span class="store-info-value" id="storeNumber">-</span>
+                        </div>
+                        <div class="store-info-row">
+                            <span class="store-info-label">Estado:</span>
+                            <span class="store-info-value store-status-pending">Pendiente</span>
+                        </div>
+                    </div>
+                    <div class="store-card-actions">
+                        <button class="btn btn-primary btn-block" id="selectStoreBtn">
+                            Seleccionar esta tienda
+                        </button>
+                        <button class="btn btn-secondary btn-block" id="cancelStoreBtn">
+                            Buscar otra tienda
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Active Store Indicator -->
+            <section class="active-store" id="activeStore" style="display: none;">
+                <div class="active-store-card">
+                    <div class="active-store-content">
+                        <div class="active-store-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M9 12l2 2 4-4"/>
+                                <circle cx="12" cy="12" r="10"/>
+                            </svg>
+                        </div>
+                        <div class="active-store-info">
+                            <span class="active-store-label">Tienda seleccionada:</span>
+                            <span class="active-store-name" id="activeStoreName">-</span>
+                            <span class="active-store-number" id="activeStoreNumber">-</span>
+                        </div>
+                    </div>
+                    <button class="btn-change-store" id="changeStoreBtn">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M18.36 6.64a9 9 0 11-12.73 0"/>
+                            <path d="M12 2v10"/>
+                        </svg>
+                        Cambiar
+                    </button>
+                </div>
+            </section>
+
+            <!-- Main Form -->
+            <section class="main-form-section" id="mainFormSection" style="display: none;">
+                <form class="main-form" id="mainForm">
+                    <!-- Personal Information -->
+                    <div class="form-group">
+                        <h3 class="form-section-title">Información Personal</h3>
+                        
+                        <div class="form-row">
+                            <div class="form-field">
+                                <label for="firstName" class="form-label">Nombre *</label>
+                                <input 
+                                    type="text" 
+                                    id="firstName" 
+                                    name="firstName" 
+                                    class="form-input" 
+                                    required
+                                    placeholder="Tu nombre"
+                                >
+                            </div>
+                            <div class="form-field">
+                                <label for="lastName" class="form-label">Apellido *</label>
+                                <input 
+                                    type="text" 
+                                    id="lastName" 
+                                    name="lastName" 
+                                    class="form-input" 
+                                    required
+                                    placeholder="Tu apellido"
+                                >
+                            </div>
+                        </div>
+
+                        <div class="form-field">
+                            <label for="email" class="form-label">Correo Electrónico *</label>
+                            <input 
+                                type="email" 
+                                id="email" 
+                                name="email" 
+                                class="form-input" 
+                                required
+                                placeholder="correo@ejemplo.com"
+                            >
+                        </div>
+
+                        <div class="form-field">
+                            <label for="phone" class="form-label">Teléfono *</label>
+                            <input 
+                                type="tel" 
+                                id="phone" 
+                                name="phone" 
+                                class="form-input" 
+                                required
+                                placeholder="+57 300 123 4567"
+                            >
+                        </div>
+
+                        <div class="form-field">
+                            <label for="position" class="form-label">Cargo / Posición *</label>
+                            <select id="position" name="position" class="form-select" required>
+                                <option value="">Selecciona tu cargo</option>
+                                <option value="gerente">Gerente</option>
+                                <option value="asistente">Asistente</option>
+                                <option value="supervisor">Supervisor</option>
+                                <option value="vendedor">Vendedor</option>
+                                <option value="otro">Otro</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Store Information -->
+                    <div class="form-group">
+                        <h3 class="form-section-title">Información de la Tienda</h3>
+                        
+                        <div class="form-field">
+                            <label for="storeAddress" class="form-label">Dirección de la tienda *</label>
+                            <input 
+                                type="text" 
+                                id="storeAddress" 
+                                name="storeAddress" 
+                                class="form-input" 
+                                required
+                                placeholder="Dirección completa"
+                            >
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-field">
+                                <label for="city" class="form-label">Ciudad *</label>
+                                <input 
+                                    type="text" 
+                                    id="city" 
+                                    name="city" 
+                                    class="form-input" 
+                                    required
+                                    placeholder="Ciudad"
+                                >
+                            </div>
+                            <div class="form-field">
+                                <label for="region" class="form-label">Región/Departamento *</label>
+                                <input 
+                                    type="text" 
+                                    id="region" 
+                                    name="region" 
+                                    class="form-input" 
+                                    required
+                                    placeholder="Región"
+                                >
+                            </div>
+                        </div>
+
+                        <div class="form-field">
+                            <label for="openDate" class="form-label">Fecha de apertura de la tienda</label>
+                            <input 
+                                type="date" 
+                                id="openDate" 
+                                name="openDate" 
+                                class="form-input"
+                            >
+                        </div>
+                    </div>
+
+                    <!-- Additional Information -->
+                    <div class="form-group">
+                        <h3 class="form-section-title">Información Adicional</h3>
+                        
+                        <div class="form-field">
+                            <label for="teamSize" class="form-label">Tamaño del equipo</label>
+                            <select id="teamSize" name="teamSize" class="form-select">
+                                <option value="">Selecciona el tamaño</option>
+                                <option value="1-5">1-5 personas</option>
+                                <option value="6-10">6-10 personas</option>
+                                <option value="11-20">11-20 personas</option>
+                                <option value="21-50">21-50 personas</option>
+                                <option value="50+">Más de 50 personas</option>
+                            </select>
+                        </div>
+
+                        <div class="form-field">
+                            <label for="comments" class="form-label">Comentarios adicionales</label>
+                            <textarea 
+                                id="comments" 
+                                name="comments" 
+                                class="form-textarea" 
+                                rows="4"
+                                placeholder="Agrega cualquier información adicional relevante..."
+                            ></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary btn-large btn-block" id="submitBtn">
+                            <span class="btn-text">Guardar Información</span>
+                            <span class="btn-loader" style="display: none;"></span>
+                        </button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- Success Message -->
+            <section class="success-section" id="successSection" style="display: none;">
+                <div class="success-card">
+                    <div class="success-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
+                            <path d="M22 4L12 14.01l-3-3"/>
+                        </svg>
+                    </div>
+                    <h2 class="success-title">¡Información Guardada!</h2>
+                    <p class="success-message">
+                        Los datos de tu tienda han sido guardados exitosamente. 
+                        El estado de tu tienda ha sido actualizado.
+                    </p>
+                    <a href="/" class="btn btn-primary">Volver al Inicio</a>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container footer-container">
+            <div class="footer-brand">
+                <a href="/" class="logo">
+                    <svg class="logo-icon" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="20" cy="20" r="18" stroke="currentColor" stroke-width="3"/>
+                        <path d="M13 20L18 25L27 15" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <span>IMLABS</span>
+                </a>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Imlabs. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="/js/form.js"></script>
+</body>
+</html>
