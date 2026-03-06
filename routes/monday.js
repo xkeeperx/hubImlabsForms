@@ -62,12 +62,12 @@ router.get('/search', async (req, res) => {
 
     const items = response.data.data?.items_page_by_column_values?.items || [];
 
-    // Filter items with "pending" status (case-insensitive)
+    // Filter items with "En Proceso" status
     const pendingItem = items.find(item => {
       const statusColumn = item.column_values.find(
         col => col.id === MONDAY_STATUS_COLUMN_ID
       );
-      return statusColumn && statusColumn.text.toLowerCase() === 'pending';
+      return statusColumn && statusColumn.text === 'En Proceso';
     });
 
     if (pendingItem) {
@@ -85,7 +85,7 @@ router.get('/search', async (req, res) => {
 
     return res.json({
       found: false,
-      message: 'Store not found or not in pending status.'
+      message: 'Store not found or not in "En Proceso" status.'
     });
 
   } catch (error) {
@@ -93,6 +93,52 @@ router.get('/search', async (req, res) => {
     return res.status(500).json({
       found: false,
       message: 'Error searching for store. Please try again.'
+    });
+  }
+});
+
+/**
+ * GET /api/monday/test
+ * Test endpoint to retrieve all items from the board
+ */
+router.get('/test', async (req, res) => {
+  try {
+    const query = `
+      query {
+        boards(ids: [${MONDAY_BOARD_ID}]) {
+          items_page(limit: 100) {
+            items {
+              id
+              name
+              column_values {
+                id
+                text
+                value
+              }
+            }
+          }
+        }
+      }
+    `;
+
+    const response = await axios.post(MONDAY_API_URL, { query }, {
+      headers: getMondayHeaders()
+    });
+
+    const items = response.data.data?.boards?.[0]?.items_page?.items || [];
+    
+    return res.json({
+      success: true,
+      total: items.length,
+      items: items
+    });
+
+  } catch (error) {
+    console.error('[TEST] Error fetching items:', error.response?.data || error.message);
+    return res.status(500).json({
+      success: false,
+      message: 'Error fetching items from Monday.com',
+      error: error.response?.data || error.message
     });
   }
 });
@@ -141,17 +187,6 @@ router.post('/save', async (req, res) => {
       });
     }
 
-    const statusColumn = item.column_values.find(
-      col => col.id === MONDAY_STATUS_COLUMN_ID
-    );
-
-    if (!statusColumn || statusColumn.text.toLowerCase() !== 'pending') {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid store or not in pending status.'
-      });
-    }
-
     // Build values object for the mutation
     const columnValues = JSON.stringify(fields);
 
@@ -161,7 +196,7 @@ router.post('/save', async (req, res) => {
         change_multiple_column_values(
           board_id: ${MONDAY_BOARD_ID}
           item_id: ${itemId}
-          column_values: ${columnValues}
+          column_values: "${columnValues.replace(/"/g, '\\"')}"
         ) {
           id
         }
@@ -173,13 +208,14 @@ router.post('/save', async (req, res) => {
     });
 
     // Update status to the configured value
+    const statusValue = JSON.stringify({ label: MONDAY_STATUS_VALUE });
     const statusMutation = `
       mutation {
         change_column_value(
           board_id: ${MONDAY_BOARD_ID}
           item_id: ${itemId}
           column_id: "${MONDAY_STATUS_COLUMN_ID}"
-          value: "${JSON.stringify(MONDAY_STATUS_VALUE)}"
+          value: "${statusValue.replace(/"/g, '\\"')}"
         ) {
           id
         }

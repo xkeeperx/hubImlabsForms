@@ -104,7 +104,8 @@ async function searchStore(storeNumber) {
     showStatusMessage('Searching store...', 'info');
     
     try {
-        const response = await fetch(`/api/monday/search?store=${encodeURIComponent(storeNumber)}`);
+        const apiUrl = `/api/monday/search?store=${encodeURIComponent(storeNumber)}`;
+        const response = await fetch(apiUrl);
         const data = await response.json();
         
         if (data.found) {
@@ -132,7 +133,6 @@ async function searchStore(storeNumber) {
             elements.storeSelection.style.display = 'none';
         }
     } catch (error) {
-        console.error('Error searching store:', error);
         showStatusMessage('Error searching for store. Please try again.', 'error');
     } finally {
         state.isSearching = false;
@@ -303,18 +303,16 @@ async function submitForm() {
     
     // Map form fields to Monday.com column IDs
     // NOTE: You need to update these column IDs to match your Monday.com board
+    // IMPORTANT: Column IDs in Monday.com CANNOT contain hyphens or dots
     const columnMapping = {
-        firstName: 'texto',           // Replace with actual column ID
-        lastName: 'texto2',           // Replace with actual column ID
-        email: 'email',               // Replace with actual column ID
-        phone: 'telefono',            // Replace with actual column ID
-        position: 'estado1',          // Replace with actual column ID
-        storeAddress: 'texto4',       // Replace with actual column ID
-        city: 'texto5',               // Replace with actual column ID
-        region: 'texto6',             // Replace with actual column ID
-        openDate: 'fecha',            // Replace with actual column ID
-        teamSize: 'estado2',          // Replace with actual column ID
-        comments: 'texto_largo'       // Replace with actual column ID
+        accountState: 'text_mm10yemx',              // Replace with actual column ID
+        storeOwner: 'text_mm147fw5',               // Replace with actual column ID
+        adsAddress: 'text_mm14yxp2',             // Replace with actual column ID
+        mailboxColor: 'text_mm14z1ss',             // Replace with actual column ID
+        manager: 'text_mm142bpn',                 // Replace with actual column ID
+        timeSavingKiosk: 'text_mm141812',         // Replace with actual column ID
+        productsNotOffered: 'text_mm142q45',   // Replace with actual column ID
+        generalFocus: 'text_mm14bhdw'
     };
     
     // Build fields object with Monday.com column IDs
@@ -326,15 +324,16 @@ async function submitForm() {
     }
     
     try {
+        const savePayload = {
+            itemId: state.selectedStore.itemId,
+            fields: fields
+        };
         const response = await fetch('/api/monday/save', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({
-                itemId: state.selectedStore.itemId,
-                fields: fields
-            })
+            body: JSON.stringify(savePayload)
         });
         
         const data = await response.json();
@@ -348,7 +347,6 @@ async function submitForm() {
             showStatusMessage(data.message || 'Error saving data. Please try again.', 'error');
         }
     } catch (error) {
-        console.error('Error submitting form:', error);
         showStatusMessage('Error saving data. Please try again.', 'error');
     } finally {
         state.isSaving = false;

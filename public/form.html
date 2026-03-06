@@ -39,14 +39,14 @@
         <div class="container">
             <div class="form-header">
                 <h1 class="form-title">Onboarding Form</h1>
-                <p class="form-subtitle">Complete the registration process for your store</p>
+                <p class="form-subtitle">Complete registration process for your store</p>
             </div>
 
             <!-- Store Search Section -->
             <section class="search-section">
                 <div class="search-container">
                     <h2 class="search-title">Search Store</h2>
-                    <p class="search-description">Enter your store number to begin the process</p>
+                    <p class="search-description">Enter your store number to begin process</p>
                     
                     <form class="search-form" id="searchForm">
                         <div class="search-input-wrapper">
@@ -58,7 +58,7 @@
                                 type="text" 
                                 id="storeInput" 
                                 class="search-input" 
-                                placeholder="Store number"
+                                placeholder="Store number" 
                                 required
                                 autocomplete="off"
                             >
@@ -105,7 +105,7 @@
                         </div>
                         <div class="store-info-row">
                             <span class="store-info-label">Status:</span>
-                            <span class="store-info-value store-status-pending">Pending</span>
+                            <span class="store-info-value store-status-pending">En Proceso</span>
                         </div>
                     </div>
                     <div class="store-card-actions">
@@ -148,121 +148,92 @@
             <!-- Main Form -->
             <section class="main-form-section" id="mainFormSection" style="display: none;">
                 <form class="main-form" id="mainForm">
-                    <!-- Personal Information -->
-                    <div class="form-group">
-                        <h3 class="form-section-title">Personal Information</h3>
-                        
-                        <div class="form-row">
-                            <div class="form-field">
-                                <label for="firstName" class="form-label">First Name *</label>
-                                <input 
-                                    type="text" 
-                                    id="firstName" 
-                                    name="firstName" 
-                                    class="form-input" 
-                                    required
-                                    placeholder="Your first name"
-                                >
-                            </div>
-                            <div class="form-field">
-                                <label for="lastName" class="form-label">Last Name *</label>
-                                <input 
-                                    type="text" 
-                                    id="lastName" 
-                                    name="lastName" 
-                                    class="form-input" 
-                                    required
-                                    placeholder="Your last name"
-                                >
-                            </div>
-                        </div>
-
-                        <div class="form-field">
-                            <label for="email" class="form-label">Email *</label>
-                            <input 
-                                type="email" 
-                                id="email" 
-                                name="email" 
-                                class="form-input" 
-                                required
-                                placeholder="email@example.com"
-                            >
-                        </div>
-
-                        <div class="form-field">
-                            <label for="phone" class="form-label">Phone *</label>
-                            <input 
-                                type="tel" 
-                                id="phone" 
-                                name="phone" 
-                                class="form-input" 
-                                required
-                                placeholder="+57 300 123 4567"
-                            >
-                        </div>
-
-                        <div class="form-field">
-                            <label for="position" class="form-label">Position *</label>
-                            <select id="position" name="position" class="form-select" required>
-                                <option value="">Select your position</option>
-                                <option value="manager">Manager</option>
-                                <option value="assistant">Assistant</option>
-                                <option value="supervisor">Supervisor</option>
-                                <option value="sales">Sales</option>
-                                <option value="other">Other</option>
-                            </select>
-                        </div>
-                    </div>
-
                     <!-- Store Information -->
                     <div class="form-group">
                         <h3 class="form-section-title">Store Information</h3>
                         
                         <div class="form-field">
-                            <label for="storeAddress" class="form-label">Store Address *</label>
-                            <input 
-                                type="text" 
-                                id="storeAddress" 
-                                name="storeAddress" 
-                                class="form-input" 
-                                required
-                                placeholder="Full address"
-                            >
-                        </div>
-
-                        <div class="form-row">
-                            <div class="form-field">
-                                <label for="city" class="form-label">City *</label>
-                                <input 
-                                    type="text" 
-                                    id="city" 
-                                    name="city" 
-                                    class="form-input" 
-                                    required
-                                    placeholder="City"
-                                >
-                            </div>
-                            <div class="form-field">
-                                <label for="region" class="form-label">Region/State *</label>
-                                <input 
-                                    type="text" 
-                                    id="region" 
-                                    name="region" 
-                                    class="form-input" 
-                                    required
-                                    placeholder="Region"
-                                >
-                            </div>
+                            <label for="accountState" class="form-label">Account State *</label>
+                            <select id="accountState" name="accountState" class="form-select" required>
+                                <option value="">Select account state</option>
+                                <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
+                                <option value="pending">Pending</option>
+                            </select>
                         </div>
 
                         <div class="form-field">
-                            <label for="openDate" class="form-label">Store Opening Date</label>
+                            <label for="storeOwner" class="form-label">Store Owner *</label>
                             <input 
-                                type="date" 
-                                id="openDate" 
-                                name="openDate" 
-                                class="form-input"
+                                type="text" 
+                                id="storeOwner" 
+                                name="storeOwner" 
+                                class="form-input" 
+                                required
+                                placeholder="Store owner name"
                             >
+                        </div>
+
+                        <div class="form-field">
+                            <label for="adsAddress" class="form-label">ADS Address *</label>
+                            <input 
+                                type="text" 
+                                id="adsAddress" 
+                                name="adsAddress" 
+                                class="form-input" 
+                                required
+                                placeholder="Full ADS address"
+                            >
+                        </div>
+
+                        <div class="form-field">
+                            <label for="mailboxColor" class="form-label">Mailbox Color *</label>
+                            <select id="mailboxColor" name="mailboxColor" class="form-select" required>
+                                <option value="">Select mailbox color</option>
+                                <option value="red">Red</option>
+                                <option value="blue">Blue</option>
+                                <option value="green">Green</option>
+                                <option value="yellow">Yellow</option>
+                                <option value="black">Black</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+
+                        <div class="form-field">
+                            <label for="manager" class="form-label">Manager *</label>
+                            <input 
+                                type="text" 
+                                id="manager" 
+                                name="manager" 
+                                class="form-input" 
+                                required
+                                placeholder="Manager name"
+                            >
+                        </div>
+
+                        <div class="form-field">
+                            <label for="timeSavingKiosk" class="form-label">Time-saving Kiosk</label>
+                            <select id="timeSavingKiosk" name="timeSavingKiosk" class="form-select">
+                                <option value="">Select option</option>
+                                <option value="yes">Yes</option>
+                                <option value="no">No</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Products Information -->
+                    <div class="form-group">
+                        <h3 class="form-section-title">Products Information</h3>
+                        
+                        <div class="form-field">
+                            <label for="productsNotOffered" class="form-label">Products NOT Offered</label>
+                            <textarea 
+                                id="productsNotOffered" 
+                                name="productsNotOffered" 
+                                class="form-textarea" 
+                                rows="3"
+                                placeholder="List products NOT offered at this store..."
+                            ></textarea>
                         </div>
                     </div>
 
@@ -271,15 +242,14 @@
                         <h3 class="form-section-title">Additional Information</h3>
                         
                         <div class="form-field">
-                            <label for="teamSize" class="form-label">Team Size</label>
-                            <select id="teamSize" name="teamSize" class="form-select">
-                                <option value="">Select team size</option>
-                                <option value="1-5">1-5 people</option>
-                                <option value="6-10">6-10 people</option>
-                                <option value="11-20">11-20 people</option>
-                                <option value="21-50">21-50 people</option>
-                                <option value="50+">More than 50 people</option>
-                            </select>
+                            <label for="generalFocus" class="form-label">General Focus</label>
+                            <textarea 
+                                id="generalFocus" 
+                                name="generalFocus" 
+                                class="form-textarea" 
+                                rows="3"
+                                placeholder="Describe general focus areas..."
+                            ></textarea>
                         </div>
 
                         <div class="form-field">
@@ -315,7 +285,7 @@
                     </div>
                     <h2 class="success-title">Information Saved!</h2>
                     <p class="success-message">
-                        Your store data has been successfully saved.
+                        Your store data has been successfully saved. 
                         Your store status has been updated.
                     </p>
                     <a href="/" class="btn btn-primary">Return to Home</a>

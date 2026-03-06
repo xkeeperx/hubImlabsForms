@@ -8,6 +8,7 @@ const cors = require('cors');
 const mondayRoutes = require('./routes/monday');
 
 const app = express();
+
 const PORT = process.env.PORT || 3000;
 
 // Middleware
@@ -47,8 +48,11 @@ app.use((err, req, res, next) => {
 
 // Start server
 app.listen(PORT, () => {
+  console.log('='.repeat(50));
   console.log(`🚀 Server running on http://localhost:${PORT}`);
   console.log(`📁 Static files served from: ${path.join(__dirname, 'public')}`);
+  console.log(`🔌 API endpoints available at: http://localhost:${PORT}/api/monday`);
+  console.log('='.repeat(50));
 });
 
 module.exports = app;
