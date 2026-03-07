@@ -62,12 +62,12 @@ router.get('/search', async (req, res) => {
 
     const items = response.data.data?.items_page_by_column_values?.items || [];
 
-    // Filter items with "En Proceso" status
+    // Filter items with "Pending Kick-Off" status
     const pendingItem = items.find(item => {
       const statusColumn = item.column_values.find(
         col => col.id === MONDAY_STATUS_COLUMN_ID
       );
-      return statusColumn && statusColumn.text === 'En Proceso';
+      return statusColumn && statusColumn.text === 'Pending Kick-Off';
     });
 
     if (pendingItem) {
@@ -85,7 +85,7 @@ router.get('/search', async (req, res) => {
 
     return res.json({
       found: false,
-      message: 'Store not found or not in "En Proceso" status.'
+      message: 'Store not found or not in "Pending Kick-Off" status.'
     });
 
   } catch (error) {

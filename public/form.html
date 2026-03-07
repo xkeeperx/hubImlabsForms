@@ -105,7 +105,7 @@
                         </div>
                         <div class="store-info-row">
                             <span class="store-info-label">Status:</span>
-                            <span class="store-info-value store-status-pending">En Proceso</span>
+                            <span class="store-info-value store-status-pending">Pending Kick-Off</span>
                         </div>
                     </div>
                     <div class="store-card-actions">
@@ -154,12 +154,17 @@
                         
                         <div class="form-field">
                             <label for="accountState" class="form-label">Account State *</label>
-                            <select id="accountState" name="accountState" class="form-select" required>
-                                <option value="">Select account state</option>
-                                <option value="active">Active</option>
-                                <option value="inactive">Inactive</option>
-                                <option value="pending">Pending</option>
-                            </select>
+                            <input
+                                type="text"
+                                id="accountState"
+                                name="accountState"
+                                class="form-input"
+                                required
+                                placeholder="Enter state code (e.g., NJ, TX, CA)"
+                                maxlength="2"
+                                pattern="[A-Za-z]{2}"
+                                title="Please enter a valid 2-letter state code (e.g., NJ, TX, CA)"
+                            >
                         </div>
 
                         <div class="form-field">
@@ -190,12 +195,8 @@
                             <label for="mailboxColor" class="form-label">Mailbox Color *</label>
                             <select id="mailboxColor" name="mailboxColor" class="form-select" required>
                                 <option value="">Select mailbox color</option>
-                                <option value="red">Red</option>
-                                <option value="blue">Blue</option>
-                                <option value="green">Green</option>
-                                <option value="yellow">Yellow</option>
-                                <option value="black">Black</option>
-                                <option value="other">Other</option>
+                                <option value="Silver">Silver</option>
+                                <option value="Gold">Gold</option>
                             </select>
                         </div>
 
@@ -249,17 +250,6 @@
                                 class="form-textarea" 
                                 rows="3"
                                 placeholder="Describe general focus areas..."
-                            ></textarea>
-                        </div>
-
-                        <div class="form-field">
-                            <label for="comments" class="form-label">Additional Comments</label>
-                            <textarea 
-                                id="comments" 
-                                name="comments" 
-                                class="form-textarea" 
-                                rows="4"
-                                placeholder="Add any additional relevant information..."
                             ></textarea>
                         </div>
                     </div>

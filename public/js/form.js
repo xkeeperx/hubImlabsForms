@@ -9,6 +9,18 @@ const state = {
     isSaving: false
 };
 
+// US State codes (2-letter codes)
+const usStates = [
+    'AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA',
+    'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD',
+    'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ',
+    'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC',
+    'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY'
+];
+
+// Create a Set for faster lookup
+const usStatesSet = new Set(usStates);
+
 // DOM Elements
 const elements = {
     // Navbar
@@ -219,6 +231,17 @@ function initMainForm() {
         emailField.addEventListener('blur', () => validateEmail(emailField));
     }
     
+    // Account State validation
+    const accountStateField = document.getElementById('accountState');
+    if (accountStateField) {
+        accountStateField.addEventListener('blur', () => validateAccountState(accountStateField));
+        accountStateField.addEventListener('input', () => {
+            if (accountStateField.classList.contains('error')) {
+                validateAccountState(accountStateField);
+            }
+        });
+    }
+    
     // Form submission
     elements.mainForm.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -273,6 +296,26 @@ function validateField(field) {
     return true;
 }
 
+function validateAccountState(field) {
+    const value = field.value.trim().toUpperCase();
+    const isRequired = field.hasAttribute('required');
+    
+    field.classList.remove('error', 'success');
+    
+    if (isRequired && !value) {
+        field.classList.add('error');
+        return false;
+    }
+    
+    if (value && !usStatesSet.has(value)) {
+        field.classList.add('error');
+        return false;
+    }
+    
+    field.classList.add('success');
+    return true;
+}
+
 function validateEmail(field) {
     const value = field.value.trim();
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -305,14 +348,14 @@ async function submitForm() {
     // NOTE: You need to update these column IDs to match your Monday.com board
     // IMPORTANT: Column IDs in Monday.com CANNOT contain hyphens or dots
     const columnMapping = {
-        accountState: 'text_mm10yemx',              // Replace with actual column ID
-        storeOwner: 'text_mm147fw5',               // Replace with actual column ID
-        adsAddress: 'text_mm14yxp2',             // Replace with actual column ID
-        mailboxColor: 'text_mm14z1ss',             // Replace with actual column ID
-        manager: 'text_mm142bpn',                 // Replace with actual column ID
-        timeSavingKiosk: 'text_mm141812',         // Replace with actual column ID
-        productsNotOffered: 'text_mm142q45',   // Replace with actual column ID
-        generalFocus: 'text_mm14bhdw'
+        accountState: 'color_mm0ejgf4',              // Replace with actual column ID
+        storeOwner: 'text_mkzn3j45',               // Replace with actual column ID
+        adsAddress: 'text_mkzng7d9',             // Replace with actual column ID
+        mailboxColor: 'color_mkztj02s',             // Replace with actual column ID
+        manager: 'text_mm0e3nk4',                 // Replace with actual column ID
+        timeSavingKiosk: 'color_mm0ee5w9',         // Replace with actual column ID
+        productsNotOffered: 'text_mm0exkpv',   // Replace with actual column ID
+        generalFocus: 'text_mm0e6sh4'
     };
     
     // Build fields object with Monday.com column IDs
