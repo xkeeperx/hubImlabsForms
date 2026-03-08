@@ -103,6 +103,16 @@ router.get('/search', async (req, res) => {
  */
 router.get('/test', async (req, res) => {
   try {
+    console.log('========================================');
+    console.log('🔍 INICIANDO DIAGNÓSTICO DE MONDAY.COM');
+    console.log('========================================');
+    
+    console.log('🔧 Configuración actual:');
+    console.log(`   - Board ID: ${MONDAY_BOARD_ID}`);
+    console.log(`   - Status Column ID: ${MONDAY_STATUS_COLUMN_ID}`);
+    console.log(`   - Status Value: ${MONDAY_STATUS_VALUE}`);
+    console.log(`   - Store Column ID: ${MONDAY_STORE_COLUMN_ID}`);
+
     const query = `
       query {
         boards(ids: [${MONDAY_BOARD_ID}]) {
@@ -121,23 +131,192 @@ router.get('/test', async (req, res) => {
       }
     `;
 
+    console.log('📡 Query de diagnóstico:', query);
+    
     const response = await axios.post(MONDAY_API_URL, { query }, {
       headers: getMondayHeaders()
     });
 
     const items = response.data.data?.boards?.[0]?.items_page?.items || [];
     
+    console.log('✅ Diagnóstico completado:');
+    console.log(`   - Total de items: ${items.length}`);
+    console.log('   - Items encontrados:', items.map(item => ({ id: item.id, name: item.name })));
+    
+    // Extraer IDs de columna únicos
+    const uniqueColumns = new Set();
+    items.forEach(item => {
+      item.column_values.forEach(col => {
+        uniqueColumns.add(col.id);
+      });
+    });
+    
+    console.log('   - IDs de columna encontrados:', Array.from(uniqueColumns));
+    
     return res.json({
       success: true,
       total: items.length,
-      items: items
+      items: items,
+      columns: Array.from(uniqueColumns),
+      config: {
+        boardId: MONDAY_BOARD_ID,
+        statusColumnId: MONDAY_STATUS_COLUMN_ID,
+        statusValue: MONDAY_STATUS_VALUE,
+        storeColumnId: MONDAY_STORE_COLUMN_ID
+      }
     });
 
   } catch (error) {
     console.error('[TEST] Error fetching items:', error.response?.data || error.message);
+    console.log('❌ Stack trace:', error.stack);
     return res.status(500).json({
       success: false,
       message: 'Error fetching items from Monday.com',
+      error: error.response?.data || error.message
+    });
+  }
+});
+
+/**
+ * GET /api/monday/diagnose
+ * Enhanced diagnostic endpoint to verify configuration
+ */
+router.get('/diagnose', async (req, res) => {
+  try {
+    console.log('========================================');
+    console.log('🔍 DIAGNÓSTICO COMPLETO DE MONDAY.COM');
+    console.log('========================================');
+    
+    const diagnosis = {
+      config: {
+        boardId: MONDAY_BOARD_ID,
+        statusColumnId: MONDAY_STATUS_COLUMN_ID,
+        statusValue: MONDAY_STATUS_VALUE,
+        storeColumnId: MONDAY_STORE_COLUMN_ID,
+        apiKeyPresent: !!MONDAY_API_KEY,
+        boardIdValid: !!MONDAY_BOARD_ID && MONDAY_BOARD_ID !== '__REPLACE_WITH_BOARD_ID__',
+        statusColumnValid: !!MONDAY_STATUS_COLUMN_ID && MONDAY_STATUS_COLUMN_ID !== 'Status',
+        statusValueValid: !!MONDAY_STATUS_VALUE && MONDAY_STATUS_VALUE !== 'Completed',
+        storeColumnValid: !!MONDAY_STORE_COLUMN_ID && MONDAY_STORE_COLUMN_ID !== 'numeric_mm10p284'
+      },
+      connectivity: false,
+      boardInfo: null,
+      columns: [],
+      sampleItems: []
+    };
+    
+    console.log('📋 Verificando configuración...');
+    diagnosis.config.summary = {
+      valid: diagnosis.config.apiKeyPresent && 
+             diagnosis.config.boardIdValid && 
+             diagnosis.config.statusColumnValid && 
+             diagnosis.config.statusValueValid && 
+             diagnosis.config.storeColumnValid,
+      issues: []
+    };
+    
+    if (!diagnosis.config.apiKeyPresent) {
+      diagnosis.config.summary.issues.push('API Key no configurada');
+    }
+    if (!diagnosis.config.boardIdValid) {
+      diagnosis.config.summary.issues.push('Board ID inválido o no configurado');
+    }
+    if (!diagnosis.config.statusColumnValid) {
+      diagnosis.config.summary.issues.push('Status Column ID inválido o no configurado');
+    }
+    if (!diagnosis.config.statusValueValid) {
+      diagnosis.config.summary.issues.push('Status Value inválido o no configurado');
+    }
+    if (!diagnosis.config.storeColumnValid) {
+      diagnosis.config.summary.issues.push('Store Column ID inválido o no configurado');
+    }
+    
+    console.log('🔗 Verificando conectividad...');
+    try {
+      const boardQuery = `
+        query {
+          boards(ids: [${MONDAY_BOARD_ID}]) {
+            id
+            name
+            state
+            item_count
+          }
+        }
+      `;
+      
+      const response = await axios.post(MONDAY_API_URL, { query: boardQuery }, {
+        headers: getMondayHeaders()
+      });
+      
+      diagnosis.connectivity = true;
+      diagnosis.boardInfo = response.data.data?.boards?.[0];
+      console.log('✅ Conectividad exitosa:', diagnosis.boardInfo);
+    } catch (connectivityError) {
+      diagnosis.connectivity = false;
+      console.log('❌ Error de conectividad:', connectivityError.message);
+    }
+    
+    if (diagnosis.connectivity && diagnosis.boardInfo) {
+      console.log('📊 Extrayendo información del tablero...');
+      try {
+        const itemsQuery = `
+          query {
+            boards(ids: [${MONDAY_BOARD_ID}]) {
+              items_page(limit: 5) {
+                items {
+                  id
+                  name
+                  column_values {
+                    id
+                    text
+                    value
+                  }
+                }
+              }
+            }
+          }
+        `;
+        
+        const itemsResponse = await axios.post(MONDAY_API_URL, { query: itemsQuery }, {
+          headers: getMondayHeaders()
+        });
+        
+        const items = itemsResponse.data.data?.boards?.[0]?.items_page?.items || [];
+        diagnosis.sampleItems = items;
+        
+        // Extraer IDs de columna
+        const uniqueColumns = new Set();
+        items.forEach(item => {
+          item.column_values.forEach(col => {
+            uniqueColumns.add(col.id);
+          });
+        });
+        diagnosis.columns = Array.from(uniqueColumns);
+        
+        console.log('✅ Información extraída:', {
+          itemCount: items.length,
+          columns: diagnosis.columns.length
+        });
+      } catch (itemsError) {
+        console.log('❌ Error extrayendo información del tablero:', itemsError.message);
+      }
+    }
+    
+    console.log('📋 Resumen de diagnóstico:', diagnosis.config.summary);
+    console.log('========================================');
+    
+    return res.json({
+      success: true,
+      diagnosis: diagnosis,
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error) {
+    console.error('[DIAGNOSE] Error en diagnóstico:', error.response?.data || error.message);
+    console.log('❌ Stack trace:', error.stack);
+    return res.status(500).json({
+      success: false,
+      message: 'Error performing diagnosis',
       error: error.response?.data || error.message
     });
   }
@@ -149,17 +328,31 @@ router.get('/test', async (req, res) => {
  */
 router.post('/save', async (req, res) => {
   try {
+    console.log('========================================');
+    console.log('🚀 INICIANDO PROCESO DE GUARDADO EN MONDAY.COM');
+    console.log('========================================');
+    
     const { itemId, fields } = req.body;
+    console.log('📥 Datos recibidos:', { itemId, fields });
 
     // Validation: itemId is required
     if (!itemId) {
+      console.log('❌ ERROR: itemId es requerido');
       return res.status(400).json({
         success: false,
         message: 'itemId is required'
       });
     }
 
+    // Log de configuración actual
+    console.log('🔧 Configuración actual:');
+    console.log(`   - Board ID: ${MONDAY_BOARD_ID}`);
+    console.log(`   - Status Column ID: ${MONDAY_STATUS_COLUMN_ID}`);
+    console.log(`   - Status Value: ${MONDAY_STATUS_VALUE}`);
+    console.log(`   - Store Column ID: ${MONDAY_STORE_COLUMN_ID}`);
+
     // Verify that the item exists and is still in "pending" status
+    console.log('🔍 Verificando existencia del item...');
     const verifyQuery = `
       query {
         items(ids: [${itemId}]) {
@@ -174,21 +367,30 @@ router.post('/save', async (req, res) => {
       }
     `;
 
+    console.log('📡 Query de verificación:', verifyQuery);
+    
     const verifyResponse = await axios.post(MONDAY_API_URL, { query: verifyQuery }, {
       headers: getMondayHeaders()
     });
+    
+    console.log('📥 Respuesta de verificación:', JSON.stringify(verifyResponse.data, null, 2));
 
     const item = verifyResponse.data.data?.items?.[0];
 
     if (!item) {
+      console.log('❌ ERROR: Item no encontrado');
       return res.status(404).json({
         success: false,
         message: 'Store not found'
       });
     }
 
+    console.log('✅ Item verificado exitosamente:', item);
+    
     // Build values object for the mutation
+    console.log('🔧 Construyendo payload para actualización...');
     const columnValues = JSON.stringify(fields);
+    console.log('📦 Column values:', columnValues);
 
     // Mutation to update multiple columns
     const updateMutation = `
@@ -203,11 +405,21 @@ router.post('/save', async (req, res) => {
       }
     `;
 
-    await axios.post(MONDAY_API_URL, { query: updateMutation }, {
-      headers: getMondayHeaders()
-    });
+    console.log('📡 Mutation de actualización:', updateMutation);
+    
+    try {
+      const updateResponse = await axios.post(MONDAY_API_URL, { query: updateMutation }, {
+        headers: getMondayHeaders()
+      });
+      
+      console.log('✅ Actualización de columnas exitosa:', JSON.stringify(updateResponse.data, null, 2));
+    } catch (updateError) {
+      console.log('❌ ERROR en actualización de columnas:', updateError.response?.data || updateError.message);
+      throw updateError;
+    }
 
     // Update status to the configured value
+    console.log('🔄 Actualizando estado...');
     const statusValue = JSON.stringify({ label: MONDAY_STATUS_VALUE });
     const statusMutation = `
       mutation {
@@ -222,10 +434,22 @@ router.post('/save', async (req, res) => {
       }
     `;
 
-    await axios.post(MONDAY_API_URL, { query: statusMutation }, {
-      headers: getMondayHeaders()
-    });
+    console.log('📡 Mutation de estado:', statusMutation);
+    
+    try {
+      const statusResponse = await axios.post(MONDAY_API_URL, { query: statusMutation }, {
+        headers: getMondayHeaders()
+      });
+      
+      console.log('✅ Actualización de estado exitosa:', JSON.stringify(statusResponse.data, null, 2));
+    } catch (statusError) {
+      console.log('❌ ERROR en actualización de estado:', statusError.response?.data || statusError.message);
+      throw statusError;
+    }
 
+    console.log('🎉 ¡GUARDADO COMPLETO EXITOSO!');
+    console.log('========================================');
+    
     return res.json({
       success: true,
       itemId: itemId,
@@ -233,10 +457,14 @@ router.post('/save', async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Error saving data:', error.response?.data || error.message);
+    console.log('❌ ERROR GENERAL EN GUARDADO:', error.response?.data || error.message);
+    console.log('Stack trace:', error.stack);
+    console.log('========================================');
+    
     return res.status(500).json({
       success: false,
-      message: 'Error saving data. Please try again.'
+      message: 'Error saving data. Please try again.',
+      error: error.response?.data || error.message
     });
   }
 });

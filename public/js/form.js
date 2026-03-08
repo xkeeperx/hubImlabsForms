@@ -224,13 +224,7 @@ function initMainForm() {
             }
         });
     });
-    
-    // Email validation
-    const emailField = document.getElementById('email');
-    if (emailField) {
-        emailField.addEventListener('blur', () => validateEmail(emailField));
-    }
-    
+       
     // Account State validation
     const accountStateField = document.getElementById('accountState');
     if (accountStateField) {
@@ -316,24 +310,6 @@ function validateAccountState(field) {
     return true;
 }
 
-function validateEmail(field) {
-    const value = field.value.trim();
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    
-    field.classList.remove('error', 'success');
-    
-    if (value && !emailRegex.test(value)) {
-        field.classList.add('error');
-        return false;
-    }
-    
-    if (value) {
-        field.classList.add('success');
-    }
-    
-    return true;
-}
-
 async function submitForm() {
     if (state.isSaving || !state.selectedStore) return;
     
@@ -348,7 +324,7 @@ async function submitForm() {
     // NOTE: You need to update these column IDs to match your Monday.com board
     // IMPORTANT: Column IDs in Monday.com CANNOT contain hyphens or dots
     const columnMapping = {
-        accountState: 'color_mm0ejgf4',              // Replace with actual column ID
+        accountState: 'dropdown_mkzna8xm',              // Replace with actual column ID
         storeOwner: 'text_mkzn3j45',               // Replace with actual column ID
         adsAddress: 'text_mkzng7d9',             // Replace with actual column ID
         mailboxColor: 'color_mkztj02s',             // Replace with actual column ID
@@ -363,33 +339,37 @@ async function submitForm() {
         const value = formData.get(fieldName);
         if (value) {
             fields[columnId] = value;
+        } else {
+            console.log(`⚠️  Campo vacío o no encontrado: ${fieldName}`);
         }
     }
-    
+        
     try {
         const savePayload = {
             itemId: state.selectedStore.itemId,
             fields: fields
         };
+                
         const response = await fetch('/api/monday/save', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify(savePayload)
-        });
-        
+        }); 
         const data = await response.json();
-        
+                
         if (data.success) {
             // Show success message
             elements.mainFormSection.style.display = 'none';
             elements.activeStore.style.display = 'none';
             elements.successSection.style.display = 'block';
         } else {
+            console.log('❌ ERROR en respuesta del servidor:', data);
             showStatusMessage(data.message || 'Error saving data. Please try again.', 'error');
         }
     } catch (error) {
+        console.error('❌ ERROR al guardar:', error);
         showStatusMessage('Error saving data. Please try again.', 'error');
     } finally {
         state.isSaving = false;
