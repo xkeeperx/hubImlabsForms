@@ -46,7 +46,7 @@
             <section class="search-section">
                 <div class="search-container">
                     <h2 class="search-title">Search Store</h2>
-                    <p class="search-description">Enter your store number to begin process</p>
+                    <p class="search-description">Select a store from the dropdown to begin process</p>
                     
                     <form class="search-form" id="searchForm">
                         <div class="search-input-wrapper">
@@ -54,19 +54,15 @@
                                 <circle cx="11" cy="11" r="8"/>
                                 <path d="M21 21l-4.35-4.35"/>
                             </svg>
-                            <input 
-                                type="text" 
+                            <select 
                                 id="storeInput" 
                                 class="search-input" 
-                                placeholder="Store number" 
                                 required
                                 autocomplete="off"
                             >
+                                <option value="">Select a store</option>
+                            </select>
                         </div>
-                        <button type="submit" class="btn btn-primary" id="searchBtn">
-                            <span class="btn-text">Search Store</span>
-                            <span class="btn-loader" style="display: none;"></span>
-                        </button>
                     </form>
 
                     <!-- Status Messages -->
@@ -100,12 +96,8 @@
                             <span class="store-info-value" id="storeName">-</span>
                         </div>
                         <div class="store-info-row">
-                            <span class="store-info-label">Number:</span>
-                            <span class="store-info-value" id="storeNumber">-</span>
-                        </div>
-                        <div class="store-info-row">
                             <span class="store-info-label">Status:</span>
-                            <span class="store-info-value store-status-pending">Pending Kick-Off</span>
+                            <span class="store-info-value store-status-pending" id="storeStatus">-</span>
                         </div>
                     </div>
                     <div class="store-card-actions">
@@ -132,7 +124,6 @@
                         <div class="active-store-info">
                             <span class="active-store-label">Selected store:</span>
                             <span class="active-store-name" id="activeStoreName">-</span>
-                            <span class="active-store-number" id="activeStoreNumber">-</span>
                         </div>
                     </div>
                     <button class="btn-change-store" id="changeStoreBtn">

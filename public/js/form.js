@@ -31,20 +31,18 @@ const elements = {
     // Search section
     searchForm: document.getElementById('searchForm'),
     storeInput: document.getElementById('storeInput'),
-    searchBtn: document.getElementById('searchBtn'),
     statusMessage: document.getElementById('statusMessage'),
     
     // Store selection
     storeSelection: document.getElementById('storeSelection'),
     storeName: document.getElementById('storeName'),
-    storeNumber: document.getElementById('storeNumber'),
+    storeStatus: document.getElementById('storeStatus'),
     selectStoreBtn: document.getElementById('selectStoreBtn'),
     cancelStoreBtn: document.getElementById('cancelStoreBtn'),
     
     // Active store indicator
     activeStore: document.getElementById('activeStore'),
     activeStoreName: document.getElementById('activeStoreName'),
-    activeStoreNumber: document.getElementById('activeStoreNumber'),
     changeStoreBtn: document.getElementById('changeStoreBtn'),
     
     // Main form
@@ -65,6 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initStoreSelection();
     initActiveStore();
     initMainForm();
+    loadStores(); // Load stores on page load
 });
 
 // ============================================
@@ -94,43 +93,131 @@ function initNavbar() {
 function initSearchForm() {
     if (!elements.searchForm) return;
     
-    elements.searchForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
+    // Auto-search when a store is selected from dropdown
+    if (elements.storeInput) {
+        elements.storeInput.addEventListener('change', async (e) => {
+            const storeNumber = e.target.value.trim();
+            if (storeNumber) {
+                await searchStore(storeNumber);
+            } else {
+                // Hide store details if the placeholder is selected
+                if (typeof cancelStoreSelection === 'function') {
+                    cancelStoreSelection();
+                }
+            }
+        });
+    }
+    
+    // Handle form submit if triggered by enter key
+    if (elements.searchForm) {
+        elements.searchForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const storeNumber = elements.storeInput.value.trim();
+            
+            if (!storeNumber) {
+                showStatusMessage('Please select a store', 'error');
+                return;
+            }
+            
+            await searchStore(storeNumber);
+        });
+    }
+}
+
+async function loadStores() {
+    if (state.isSearching) return;
+    
+    state.isSearching = true;
+    showStatusMessage('Loading stores...', 'info');
+    
+    try {
+        const apiUrl = `/api/monday/stores`;
+        const response = await fetch(apiUrl);
+        const data = await response.json();
+        console.log(data);
         
-        const storeNumber = elements.storeInput.value.trim();
-        
-        if (!storeNumber) {
-            showStatusMessage('Please enter a store number', 'error');
-            return;
+        if (data.success && data.stores.length > 0) {
+            state.stores = data.stores; // Store locally to prevent redundant searches
+            
+            // Clear existing options except the first one
+            while (elements.storeInput.options.length > 1) {
+                elements.storeInput.remove(1);
+            }
+            
+            // Add stores to dropdown
+            data.stores.forEach(store => {
+                const option = document.createElement('option');
+                option.value = store.value;
+                option.textContent = store.label;
+                elements.storeInput.appendChild(option);
+            });
+            
+            showStatusMessage(`Found ${data.stores.length} stores available`, 'success');
+        } else {
+            // No stores found
+            showStatusMessage(data.message || 'No stores found with pending status.', 'error');
         }
-        
-        await searchStore(storeNumber);
-    });
+    } catch (error) {
+        showStatusMessage('Error loading stores. Please try again.', 'error');
+    } finally {
+        state.isSearching = false;
+    }
 }
 
 async function searchStore(storeNumber) {
     if (state.isSearching) return;
     
     state.isSearching = true;
-    setButtonLoading(elements.searchBtn, true);
     showStatusMessage('Searching store...', 'info');
     
     try {
-        const apiUrl = `/api/monday/search?store=${encodeURIComponent(storeNumber)}`;
-        const response = await fetch(apiUrl);
-        const data = await response.json();
-        
+        // First check if we already have it in local state from the dropdown load
+        let foundStore = null;
+        if (state.stores) {
+            foundStore = state.stores.find(s => s.value === storeNumber);
+        }
+
+        let data;
+        if (foundStore) {
+            // Reconstruct data as if it came from API
+            // Note: form.js expects storeName, storeNumber, storeStatus
+            // Extract them from the label (e.g., "123 - Store X (Pending Kick-Off)")
+            const labelParts = foundStore.label.split(' - ');
+            const storeNum = labelParts[0];
+            const nameAndStatus = labelParts.slice(1).join(' - ');
+            const splitIdx = nameAndStatus.lastIndexOf(' (');
+            
+            const storeName = nameAndStatus.substring(0, splitIdx);
+            const storeStatus = nameAndStatus.substring(splitIdx + 2, nameAndStatus.length - 1);
+            
+            data = {
+                found: true,
+                itemId: foundStore.id,
+                storeName: storeName,
+                storeNumber: storeNum,
+                storeStatus: storeStatus
+            };
+        } else {
+            // Fallback to API if not loaded or searched manually
+            const apiUrl = `/api/monday/search?store=${encodeURIComponent(storeNumber)}`;
+            const response = await fetch(apiUrl);
+            data = await response.json();
+            console.log(data);
+        }
+
         if (data.found) {
             // Store found and is pending
             state.selectedStore = {
                 itemId: data.itemId,
                 storeName: data.storeName,
-                storeNumber: data.storeNumber
+                storeNumber: data.storeNumber,
+                storeStatus: data.storeStatus
             };
             
             // Update store selection card
-            elements.storeName.textContent = data.storeName;
-            elements.storeNumber.textContent = data.storeNumber;
+            if (elements.storeName) elements.storeName.textContent = data.storeName;
+            if (elements.storeStatus) elements.storeStatus.textContent = data.storeStatus;
             
             // Show store selection card
             elements.storeSelection.style.display = 'block';
@@ -148,7 +235,6 @@ async function searchStore(storeNumber) {
         showStatusMessage('Error searching for store. Please try again.', 'error');
     } finally {
         state.isSearching = false;
-        setButtonLoading(elements.searchBtn, false);
     }
 }
 
@@ -173,8 +259,7 @@ function selectStore() {
     if (!state.selectedStore) return;
     
     // Update active store indicator
-    elements.activeStoreName.textContent = state.selectedStore.storeName;
-    elements.activeStoreNumber.textContent = `#${state.selectedStore.storeNumber}`;
+    if (elements.activeStoreName) elements.activeStoreName.textContent = state.selectedStore.storeName;
     
     // Show active store indicator and main form
     elements.activeStore.style.display = 'block';
@@ -429,5 +514,5 @@ function debounce(func, wait) {
         };
         clearTimeout(timeout);
         timeout = setTimeout(later, wait);
-    };
+    }
 }
