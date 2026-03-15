@@ -1,5 +1,6 @@
 const express = require("express");
 const axios = require("axios");
+const { appendToGoogleSheet } = require("./googleSheets");
 const router = express.Router();
 
 // Configuration constants from environment variables
@@ -212,16 +213,6 @@ router.get("/stores", async (req, res) => {
  */
 router.get("/test", async (req, res) => {
   try {
-    console.log("========================================");
-    console.log("🔍 INICIANDO DIAGNÓSTICO DE MONDAY.COM");
-    console.log("========================================");
-
-    console.log("🔧 Configuración actual:");
-    console.log(`   - Board ID: ${MONDAY_BOARD_ID}`);
-    console.log(`   - Status Column ID: ${MONDAY_STATUS_COLUMN_ID}`);
-    console.log(`   - Status Value: ${MONDAY_STATUS_VALUE}`);
-    console.log(`   - Store Column ID: ${MONDAY_STORE_COLUMN_ID}`);
-
     const query = `
       query {
         boards(ids: [${MONDAY_BOARD_ID}]) {
@@ -239,9 +230,6 @@ router.get("/test", async (req, res) => {
         }
       }
     `;
-
-    console.log("📡 Query de diagnóstico:", query);
-
     const response = await axios.post(
       MONDAY_API_URL,
       { query },
@@ -474,13 +462,8 @@ router.get("/diagnose", async (req, res) => {
  */
 router.post("/save", async (req, res) => {
   try {
-    console.log("========================================");
-    console.log("🚀 INICIANDO PROCESO DE GUARDADO EN MONDAY.COM");
-    console.log("========================================");
-
     const { itemId, fields } = req.body;
-    console.log("📥 Datos recibidos:", { itemId, fields });
-
+    
     // Validation: itemId is required
     if (!itemId) {
       console.log("❌ ERROR: itemId es requerido");
@@ -490,15 +473,7 @@ router.post("/save", async (req, res) => {
       });
     }
 
-    // Log de configuración actual
-    console.log("🔧 Configuración actual:");
-    console.log(`   - Board ID: ${MONDAY_BOARD_ID}`);
-    console.log(`   - Status Column ID: ${MONDAY_STATUS_COLUMN_ID}`);
-    console.log(`   - Status Value: ${MONDAY_STATUS_VALUE}`);
-    console.log(`   - Store Column ID: ${MONDAY_STORE_COLUMN_ID}`);
-
     // Verify that the item exists and is still in "pending" status
-    console.log("🔍 Verificando existencia del item...");
     const verifyQuery = `
       query {
         items(ids: [${itemId}]) {
@@ -513,19 +488,12 @@ router.post("/save", async (req, res) => {
       }
     `;
 
-    console.log("📡 Query de verificación:", verifyQuery);
-
     const verifyResponse = await axios.post(
       MONDAY_API_URL,
       { query: verifyQuery },
       {
         headers: getMondayHeaders(),
       },
-    );
-
-    console.log(
-      "📥 Respuesta de verificación:",
-      JSON.stringify(verifyResponse.data, null, 2),
     );
 
     const item = verifyResponse.data.data?.items?.[0];
@@ -538,13 +506,8 @@ router.post("/save", async (req, res) => {
       });
     }
 
-    console.log("✅ Item verificado exitosamente:", item);
-
     // Build values object for the mutation
-    console.log("🔧 Construyendo payload para actualización...");
     const columnValues = JSON.stringify(fields);
-    console.log("📦 Column values:", columnValues);
-
     // Mutation to update multiple columns
     const updateMutation = `
       mutation {
@@ -558,8 +521,6 @@ router.post("/save", async (req, res) => {
       }
     `;
 
-    console.log("📡 Mutation de actualización:", updateMutation);
-
     try {
       const updateResponse = await axios.post(
         MONDAY_API_URL,
@@ -567,11 +528,6 @@ router.post("/save", async (req, res) => {
         {
           headers: getMondayHeaders(),
         },
-      );
-
-      console.log(
-        "✅ Actualización de columnas exitosa:",
-        JSON.stringify(updateResponse.data, null, 2),
       );
     } catch (updateError) {
       console.log(
@@ -582,7 +538,6 @@ router.post("/save", async (req, res) => {
     }
 
     // Update status to the configured value
-    console.log("🔄 Actualizando estado...");
     const statusValue = JSON.stringify({ label: MONDAY_STATUS_VALUE });
     const statusMutation = `
       mutation {
@@ -597,8 +552,6 @@ router.post("/save", async (req, res) => {
       }
     `;
 
-    console.log("📡 Mutation de estado:", statusMutation);
-
     try {
       const statusResponse = await axios.post(
         MONDAY_API_URL,
@@ -606,11 +559,6 @@ router.post("/save", async (req, res) => {
         {
           headers: getMondayHeaders(),
         },
-      );
-
-      console.log(
-        "✅ Actualización de estado exitosa:",
-        JSON.stringify(statusResponse.data, null, 2),
       );
     } catch (statusError) {
       console.log(
@@ -620,14 +568,54 @@ router.post("/save", async (req, res) => {
       throw statusError;
     }
 
-    console.log("🎉 ¡GUARDADO COMPLETO EXITOSO!");
-    console.log("========================================");
+    // Prepare data for Google Sheets
+    const googleSheetsData = {
+      storeId: item.id,
+      storeName: item.name,
+      accountState: fields.dropdown_mkzna8xm || '',
+      storeOwner: fields.text_mkzn3j45 || '',
+      adsAddress: fields.text_mkzng7d9 || '',
+      mailboxColor: fields.color_mkztj02s || '',
+      manager: fields.text_mm0e3nk4 || '',
+      timeSavingKiosk: fields.color_mm0ee5w9 || '',
+      productsNotOffered: fields.text_mm0exkpv || '',
+      generalFocus: fields.text_mm0e6sh4 || ''
+    };
 
-    return res.json({
-      success: true,
-      itemId: itemId,
-      message: "Data saved successfully",
-    });
+    // Try to save to Google Sheets
+    try {
+      const googleSheetsResult = await appendToGoogleSheet(googleSheetsData);
+      
+      if (googleSheetsResult.success) {
+        return res.json({
+          success: true,
+          itemId: itemId,
+          message: "Data saved successfully",
+          googleSheets: googleSheetsResult
+        });
+      } else {
+        return res.json({
+          success: true,
+          itemId: itemId,
+          message: "Data saved successfully, but there was an issue with Google Sheets",
+          googleSheets: googleSheetsResult
+        });
+      }
+    } catch (sheetsError) {
+      console.log("❌ ERROR CRÍTICO AL GUARDAR EN GOOGLE SHEETS:", sheetsError.message);
+      console.log("Stack trace:", sheetsError.stack);
+      
+      // Continue even if Google Sheets fails
+      return res.json({
+        success: true,
+        itemId: itemId,
+        message: "Data saved successfully, but there was an issue with Google Sheets",
+        googleSheets: {
+          success: false,
+          error: sheetsError.message
+        }
+      });
+    }
   } catch (error) {
     console.log(
       "❌ ERROR GENERAL EN GUARDADO:",

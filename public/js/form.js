@@ -135,7 +135,6 @@ async function loadStores() {
         const apiUrl = `/api/monday/stores`;
         const response = await fetch(apiUrl);
         const data = await response.json();
-        console.log(data);
         
         if (data.success && data.stores.length > 0) {
             state.stores = data.stores; // Store locally to prevent redundant searches
@@ -203,7 +202,6 @@ async function searchStore(storeNumber) {
             const apiUrl = `/api/monday/search?store=${encodeURIComponent(storeNumber)}`;
             const response = await fetch(apiUrl);
             data = await response.json();
-            console.log(data);
         }
 
         if (data.found) {
@@ -425,7 +423,7 @@ async function submitForm() {
         if (value) {
             fields[columnId] = value;
         } else {
-            console.log(`⚠️  Campo vacío o no encontrado: ${fieldName}`);
+            console.log(`Campo vacío o no encontrado: ${fieldName}`);
         }
     }
         
@@ -450,11 +448,11 @@ async function submitForm() {
             elements.activeStore.style.display = 'none';
             elements.successSection.style.display = 'block';
         } else {
-            console.log('❌ ERROR en respuesta del servidor:', data);
+            console.log('ERROR en respuesta del servidor:', data);
             showStatusMessage(data.message || 'Error saving data. Please try again.', 'error');
         }
     } catch (error) {
-        console.error('❌ ERROR al guardar:', error);
+        console.error('ERROR al guardar:', error);
         showStatusMessage('Error saving data. Please try again.', 'error');
     } finally {
         state.isSaving = false;
