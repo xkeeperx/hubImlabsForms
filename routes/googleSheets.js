@@ -77,7 +77,7 @@ const createDataRow = (formData) => {
     [GOOGLE_SHEET_ADSADDRESS_COLUMN]: formData.adsAddress || '',
     [GOOGLE_SHEET_MAILBOXCOLOR_COLUMN]: formData.mailboxColor || '',
     [GOOGLE_SHEET_MANAGER_COLUMN]: formData.manager || '',
-    [GOOGLE_SHEET_TIMESAVINGKIOSK_COLUMN]: formData.timeSavingKiosk === '6' ? 'Sí' : (formData.timeSavingKiosk === '4' ? 'No' : (formData.timeSavingKiosk || '')),
+    [GOOGLE_SHEET_TIMESAVINGKIOSK_COLUMN]: formData.timeSavingKiosk == '6' ? 'YES' : (formData.timeSavingKiosk == '4' ? 'NO' : (formData.timeSavingKiosk || '')),
     [GOOGLE_SHEET_PRODUCTSNOTOFFERED_COLUMN]: formData.productsNotOffered || '',
     [GOOGLE_SHEET_GENERALFOCUS_COLUMN]: formData.generalFocus || ''
   };
