@@ -1051,6 +1051,16 @@ body {
     min-width: 100%;
 }
 
+/* Safe centering: when items don't fill the container, these margins push them to the center.
+   When they overflow, max-content makes margins evaluate to 0, aligning items securely to the left edge. */
+.store-form-card:first-child {
+    margin-left: auto;
+}
+
+.store-form-card:last-child {
+    margin-right: auto;
+}
+
 /* ============================================
    Per-store form card
    ============================================ */

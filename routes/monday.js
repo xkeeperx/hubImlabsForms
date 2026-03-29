@@ -602,9 +602,13 @@ router.post("/save", async (req, res) => {
       return res.status(400).json({ success: false, message: "itemId or stores array is required" });
     }
 
-    const results = await Promise.all(storesToSave.map(async ({ itemId, fields }) => {
-      return await saveOneStore(itemId, fields);
-    }));
+    // Process stores SEQUENTIALLY to avoid Monday.com API rate limits.
+    // Promise.all (parallel) triggers rate limit errors for the 2nd+ store.
+    const results = [];
+    for (const { itemId, fields } of storesToSave) {
+      const result = await saveOneStore(itemId, fields);
+      results.push(result);
+    }
 
     const allSuccess = results.every(r => r.success);
     return res.json({
@@ -652,55 +656,95 @@ async function saveOneStore(itemId, fields) {
     const mondayFields = { ...fields };
     delete mondayFields["person"];
 
-    // Update columns
-    const columnValues = JSON.stringify(mondayFields);
     const updateMutation = `
-      mutation {
+      mutation ($boardId: ID!, $itemId: ID!, $columnValues: JSON!) {
         change_multiple_column_values(
-          board_id: ${MONDAY_BOARD_ID}
-          item_id: ${itemId}
-          column_values: "${columnValues.replace(/"/g, '\\"')}"
+          board_id: $boardId
+          item_id: $itemId
+          column_values: $columnValues
         ) {
           id
         }
       }
     `;
-    await axios.post(MONDAY_API_URL, { query: updateMutation }, { headers: getMondayHeaders() });
+    const updateVariables = {
+      boardId: String(MONDAY_BOARD_ID),
+      itemId: String(itemId),
+      columnValues: JSON.stringify(mondayFields)
+    };
+    const updateRes = await axios.post(
+      MONDAY_API_URL, 
+      { query: updateMutation, variables: updateVariables }, 
+      { headers: getMondayHeaders() }
+    );
+    if (updateRes.data?.errors) {
+      const errMsg = JSON.stringify(updateRes.data.errors);
+      console.error(`[MONDAY UPDATE ERROR] Store ${itemId}:`, errMsg);
+      return { success: false, itemId, message: `Monday update error: ${updateRes.data.errors[0]?.message}` };
+    }
 
     // Update status
-    const statusValue = JSON.stringify({ label: MONDAY_STATUS_VALUE });
     const statusMutation = `
-      mutation {
+      mutation ($boardId: ID!, $itemId: ID!, $columnId: String!, $value: JSON!) {
         change_column_value(
-          board_id: ${MONDAY_BOARD_ID}
-          item_id: ${itemId}
-          column_id: "${MONDAY_STATUS_COLUMN_ID}"
-          value: "${statusValue.replace(/"/g, '\\"')}"
+          board_id: $boardId
+          item_id: $itemId
+          column_id: $columnId
+          value: $value
         ) {
           id
         }
       }
     `;
-    await axios.post(MONDAY_API_URL, { query: statusMutation }, { headers: getMondayHeaders() });
+    const statusVariables = {
+      boardId: String(MONDAY_BOARD_ID),
+      itemId: String(itemId),
+      columnId: MONDAY_STATUS_COLUMN_ID,
+      value: JSON.stringify({ label: MONDAY_STATUS_VALUE })
+    };
+    const statusRes = await axios.post(
+      MONDAY_API_URL, 
+      { query: statusMutation, variables: statusVariables }, 
+      { headers: getMondayHeaders() }
+    );
+    if (statusRes.data?.errors) {
+      console.error(`[MONDAY STATUS ERROR] Store ${itemId}:`, JSON.stringify(statusRes.data.errors));
+      // Don't block — status update failure is non-critical; data was already saved.
+    }
+
+
+    // Safe extractor to prevent objects leaking into Google Sheets cells
+    const safeStr = (obj) => {
+      if (obj === null || obj === undefined) return '';
+      if (typeof obj === 'string') return obj;
+      if (typeof obj === 'number') return String(obj);
+      if (Array.isArray(obj)) return obj.join(', ');
+      if (obj.labels !== undefined) return Array.isArray(obj.labels) ? obj.labels.join(', ') : String(obj.labels); // Dropdown column
+      if (obj.label !== undefined) return String(obj.label);   // Status column
+      if (obj.phone !== undefined) return String(obj.phone);   // Phone column
+      if (obj.index !== undefined) return obj.index === 6 ? 'YES' : 'NO'; // Checkbox-like status
+      if (typeof obj === 'object') return JSON.stringify(obj);
+      return String(obj);
+    };
 
     // Google Sheets
     const googleSheetsData = {
-      storeId: item.id,
-      storeName: item.name,
-      accountState: fields.dropdown_mkzna8xm?.label || fields.dropdown_mkzna8xm || '',
-      storeOwner: fields.text_mkzn3j45 || '',
-      ownerEmail: fields.long_text_mkztccnb || '',
-      storeType: fields.color_mm1tkp4y?.label || fields.color_mm1tkp4y || '',
-      ownerMobile: fields.phone_mm0e9qe0?.phone || fields.phone_mm0e9qe0 || '',
-      accountManager: fields.person || '',
-      storeAddress: fields.text_mm0e9v1j || '',
-      coopBoardMember: fields.color_mm1vhm22?.label || fields.color_mm1vhm22 || '',
-      adsAddress: fields.text_mkzng7d9 || '',
-      mailboxColor: fields.color_mkztj02s?.label || fields.color_mkztj02s || '',
-      manager: fields.text_mm0e3nk4 || '',
-      timeSavingKiosk: (fields.color_mm0ee5w9?.index !== undefined) ? fields.color_mm0ee5w9.index : (fields.color_mm0ee5w9 || ''),
-      productsNotOffered: fields.text_mm0exkpv || '',
-      generalFocus: fields.text_mm0e6sh4 || ''
+      storeId: safeStr(item.id),
+      storeName: safeStr(item.name),
+      accountState: safeStr(fields.dropdown_mkzna8xm),
+      storeOwner: safeStr(fields.text_mkzn3j45),
+      ownerEmail: safeStr(fields.long_text_mkztccnb),
+      storeType: safeStr(fields.color_mm1tkp4y),
+      ownerMobile: safeStr(fields.phone_mm0e9qe0),
+      accountManager: safeStr(fields.person),
+      storeAddress: safeStr(fields.text_mm0e9v1j),
+      coopBoardMember: safeStr(fields.color_mm1vhm22),
+      adsAddress: safeStr(fields.text_mkzng7d9),
+      mailboxColor: safeStr(fields.color_mkztj02s),
+      manager: safeStr(fields.text_mm0e3nk4),
+      timeSavingKiosk: safeStr(fields.color_mm0ee5w9),
+      productsNotOffered: safeStr(fields.text_mm0exkpv),
+      generalFocus: safeStr(fields.text_mm0e6sh4)
     };
 
     let sheetsResult = { success: false };
