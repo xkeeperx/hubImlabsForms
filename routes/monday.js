@@ -9,6 +9,7 @@ const MONDAY_BOARD_ID = process.env.MONDAY_BOARD_ID;
 const MONDAY_STATUS_COLUMN_ID = process.env.MONDAY_STATUS_COLUMN_ID;
 const MONDAY_STATUS_VALUE = process.env.MONDAY_STATUS_VALUE;
 const MONDAY_STORE_COLUMN_ID = process.env.MONDAY_STORE_COLUMN_ID;
+const MONDAY_ADS_BOARD_ID = process.env.MONDAY_ADS_BOARD_ID;
 
 // Base URL for Monday.com API
 const MONDAY_API_URL = "https://api.monday.com/v2";
@@ -686,7 +687,7 @@ async function saveOneStore(itemId, fields) {
     const googleSheetsData = {
       storeId: item.id,
       storeName: item.name,
-      accountState: fields.dropdown_mkzna8xm || '',
+      accountState: fields.dropdown_mkzna8xm?.label || fields.dropdown_mkzna8xm || '',
       storeOwner: fields.text_mkzn3j45 || '',
       ownerEmail: fields.long_text_mkztccnb || '',
       storeType: fields.color_mm1tkp4y?.label || fields.color_mm1tkp4y || '',
@@ -697,7 +698,7 @@ async function saveOneStore(itemId, fields) {
       adsAddress: fields.text_mkzng7d9 || '',
       mailboxColor: fields.color_mkztj02s?.label || fields.color_mkztj02s || '',
       manager: fields.text_mm0e3nk4 || '',
-      timeSavingKiosk: fields.color_mm0ee5w9?.index || fields.color_mm0ee5w9 || '',
+      timeSavingKiosk: (fields.color_mm0ee5w9?.index !== undefined) ? fields.color_mm0ee5w9.index : (fields.color_mm0ee5w9 || ''),
       productsNotOffered: fields.text_mm0exkpv || '',
       generalFocus: fields.text_mm0e6sh4 || ''
     };
@@ -715,6 +716,358 @@ async function saveOneStore(itemId, fields) {
     return { success: false, itemId, message: error.message };
   }
 }
+
+/**
+ * POST /api/monday/save-ads
+ * Saves ad request data to a separate dashboard
+ */
+router.post("/save-ads", async (req, res) => {
+  try {
+    const { ads } = req.body;
+    const ADS_BOARD_ID = MONDAY_ADS_BOARD_ID;
+
+    if (!ADS_BOARD_ID) {
+      return res.status(500).json({ success: false, message: "ADS_BOARD_ID not configured in environment" });
+    }
+
+    if (!ads || !Array.isArray(ads)) {
+      return res.status(400).json({ success: false, message: "Invalid payload: 'ads' array required" });
+    }
+
+    console.log(`[DEBUG] Processing ${ads.length} ad requests...`);
+    const results = [];
+
+    for (const adItem of ads) {
+      const { storeName, fields } = adItem;
+      const storeNumber = fields.storeNumber || "Unknown";
+
+      // Helper to format values based on Monday column type
+      // Format: { column_id: value_object }
+      const columnValues = {};
+      
+      // 1. Identification (usually the name of the item, but if you have a column too...)
+      // The name of the item is handled by item_name in the mutation below.
+
+      // 2. Long Text fields
+      if (fields.struggle) columnValues["long_text_mm1mahw1"] = { text: fields.struggle };
+      if (fields.designReq) columnValues["long_text_mm0826s6"] = { text: fields.designReq };
+      if (fields.notes) columnValues["long_text_mm1mjnc0"] = { text: fields.notes };
+
+      // Helper to format Status/Color columns (supports Label or Index)
+      const formatStatusValue = (val) => {
+        if (!val && val !== 0) return null;
+        if (!isNaN(val) && val.toString().trim() !== "") {
+          return { index: parseInt(val, 10) };
+        }
+        return { label: val };
+      };
+
+      // 3. Status fields (color_...)
+      if (fields.profitCenter) columnValues["color_mm0emr3y"] = formatStatusValue(fields.profitCenter);
+      if (fields.month) columnValues["color_mkztmrwm"] = formatStatusValue(fields.month);
+      if (fields.objective) columnValues["color_mkztnkcm"] = formatStatusValue(fields.objective);
+      
+      // 4. Boolean / Checkbox
+      columnValues["boolean_mkztx9ks"] = { checked: !!fields.budgetCheck };
+
+      // 5. Numeric
+      if (fields.budgetValue) {
+        const val = parseFloat(fields.budgetValue.toString().replace(/[^0-9.]/g, ''));
+        if (!isNaN(val)) columnValues["numeric_mkztgwh4"] = val;
+      }
+
+      // 6. Text
+      if (fields.radius) columnValues["text_mkztjkth"] = fields.radius;
+
+      // 7. Board Relation (Caution: requires Item IDs, labels usually don't work)
+      if (fields.adRef) {
+        const itemId = parseInt(fields.adRef, 10);
+        if (!isNaN(itemId)) {
+          columnValues["board_relation_mm1rqd3x"] = { item_ids: [itemId] }; 
+        } else {
+          // Fallback if user mapped it to a Status column instead of Board Relation
+          columnValues["board_relation_mm1rqd3x"] = formatStatusValue(fields.adRef); 
+        }
+      }
+
+      const createMutation = `
+        mutation ($boardId: ID!, $itemName: String!, $columnValues: JSON!) {
+          create_item (
+            board_id: $boardId,
+            item_name: $itemName,
+            column_values: $columnValues
+          ) {
+            id
+          }
+        }
+      `;
+
+      const variables = {
+        boardId: ADS_BOARD_ID,
+        itemName: `Ad Request - ${storeName} (#${storeNumber})`,
+        columnValues: JSON.stringify(columnValues)
+      };
+
+      try {
+        const response = await axios.post(MONDAY_API_URL, 
+          { query: createMutation, variables }, 
+          { headers: getMondayHeaders() }
+        );
+
+        const data = response.data;
+
+        if (data.errors) {
+          console.error(`[MONDAY ERROR] for ${storeName}:`, JSON.stringify(data.errors, null, 2));
+          results.push({ success: false, storeName, message: data.errors[0]?.message });
+        } else {
+          console.log(`[SUCCESS] Created item ${data.data.create_item.id} for ${storeName}`);
+          results.push({ success: true, storeName, id: data.data.create_item.id });
+        }
+      } catch (err) {
+        console.error(`[AXIOS ERROR] for ${storeName}:`, err.response?.data || err.message);
+        results.push({ success: false, storeName, message: err.message });
+      }
+    }
+
+    const overallSuccess = results.some(r => r.success);
+    res.json({
+      success: overallSuccess,
+      results,
+      message: overallSuccess ? "Ad requests processed" : "Failed to process ad requests"
+    });
+
+  } catch (error) {
+    console.error("Critical error in save-ads:", error.message);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+/**
+ * GET /api/monday/ad-references
+ * Fetches approved items from the ad references board (ID: 9800780291) to populate the form
+ */
+router.get("/ad-references", async (req, res) => {
+  try {
+    const boardId = "9800780291";
+    
+    // We fetch items from the board and then filter locally for "Approved"
+    const query = `
+      query {
+        boards(ids: [${boardId}]) {
+          items_page(limit: 100) {
+            items {
+              id
+              name
+              column_values {
+                id
+                text
+              }
+            }
+          }
+        }
+      }
+    `;
+
+    const response = await axios.post(MONDAY_API_URL, { query }, { headers: getMondayHeaders() });
+    
+    if (!response.data.data?.boards?.[0]) {
+      return res.status(404).json({ success: false, message: "References board not found" });
+    }
+
+    const items = response.data.data.boards[0].items_page.items;
+    
+    // Filter by "Approved" regardless of which column contains it
+    const approvedItems = items
+      .filter(item => item.column_values.some(col => col.text && col.text.toLowerCase() === 'approved'))
+      .map(item => ({ id: item.id, name: item.name }));
+
+    res.json({ success: true, references: approvedItems });
+  } catch (error) {
+    console.error("Error in ad-references:", error.message);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+/**
+ * GET /api/monday/ads/items
+ * Lists items from the Ads board to find IDs for testing
+ */
+router.get("/ads/items", async (req, res) => {
+  try {
+    if (!MONDAY_ADS_BOARD_ID) {
+      return res.status(500).json({ success: false, message: "ADS_BOARD_ID not configured" });
+    }
+
+    const query = `
+      query {
+        boards (ids: [${MONDAY_ADS_BOARD_ID}]) {
+          name
+          items_page (limit: 10) {
+            items {
+              id
+              name
+            }
+          }
+        }
+      }
+    `;
+
+    const response = await axios.post(MONDAY_API_URL, { query }, { headers: getMondayHeaders() });
+    const data = response.data.data;
+    
+    if (!data || !data.boards || data.boards.length === 0) {
+      return res.status(404).json({ success: false, message: "Ads board not found" });
+    }
+
+    const board = data.boards[0];
+    res.json({
+      success: true,
+      boardName: board.name,
+      items: board.items_page.items
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+/**
+ * GET /api/monday/ads/diagnosis
+ * Full diagnosis for the Ads board
+ */
+router.get("/ads/diagnosis", async (req, res) => {
+  try {
+    if (!MONDAY_ADS_BOARD_ID) {
+      return res.status(500).json({ success: false, message: "ADS_BOARD_ID not configured" });
+    }
+
+    const query = `
+      query {
+        boards (ids: [${MONDAY_ADS_BOARD_ID}]) {
+          id
+          name
+          columns {
+            id
+            title
+            type
+          }
+          items_page (limit: 5) {
+            items {
+              id
+              name
+              column_values {
+                id
+                text
+                value
+                type
+              }
+            }
+          }
+        }
+      }
+    `;
+
+    const response = await axios.post(MONDAY_API_URL, { query }, { headers: getMondayHeaders() });
+    res.json({
+      success: true,
+      data: response.data.data?.boards?.[0] || null
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+/**
+ * GET /api/monday/ads/column-settings
+ * Obtiene las etiquetas (labels) de todas las columnas de estatus/dropdown del tablero de Ads
+ */
+router.get("/ads/column-settings", async (req, res) => {
+  try {
+    if (!MONDAY_ADS_BOARD_ID) {
+      return res.status(500).json({ success: false, message: "ADS_BOARD_ID not configured" });
+    }
+
+    const query = `
+      query {
+        boards (ids: [${MONDAY_ADS_BOARD_ID}]) {
+          columns {
+            id
+            title
+            type
+            settings_str
+          }
+        }
+      }
+    `;
+
+    const response = await axios.post(MONDAY_API_URL, { query }, { headers: getMondayHeaders() });
+    
+    if (!response.data.data?.boards?.[0]) {
+      return res.status(404).json({ success: false, message: "Ads board not found" });
+    }
+
+    const cols = response.data.data.boards[0].columns;
+    
+    const settings = cols.map(c => {
+      let options = null;
+      try {
+        const parsed = JSON.parse(c.settings_str || "{}");
+        // Status use labels, Dropdowns use options
+        options = parsed.labels || parsed.options || null;
+      } catch (e) {}
+      
+      return {
+        id: c.id,
+        title: c.title,
+        type: c.type,
+        available_labels: options
+      };
+    }).filter(c => c.available_labels || c.type === 'board_relation');
+
+    res.json({ success: true, columns: settings });
+  } catch (error) {
+    console.error("Error in column-settings:", error.message);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+/**
+ * POST /api/monday/test-save-ads
+ * Endpoint de prueba con datos quemados
+ */
+router.post("/test-save-ads", async (req, res) => {
+  const testPayload = {
+    ads: [
+      {
+        storeName: "Test Store #999",
+        fields: {
+          storeNumber: "999",
+          struggle: "Testing struggle field (Long Text)",
+          profitCenter: "PR",
+          designReq: "Focus: This is a design test",
+          budgetCheck: true,
+          budgetValue: "1500",
+          month: "January",
+          objective: "Leads",
+          radius: "10 miles",
+          notes: "General test notes",
+          adRef: "Mailbox"
+        }
+      }
+    ]
+  };
+
+  // Redirigimos internamente a save-ads o simplemente llamamos a la misma lógica
+  // Pero para simplicidad de prueba, haremos un fetch interno o simplemente informamos
+  try {
+    // Simulamos req.body
+    req.body = testPayload;
+    // Llamamos a la lógica enviando la respuesta directamente
+    console.log("[TEST] Disparando guardado de prueba...");
+    return await router.handle(req, res); // Esto es un hack pero efectivo
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
 
 module.exports = router;
 

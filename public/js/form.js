@@ -23,6 +23,24 @@ const columnMapping = {
     generalFocus:       'text_mm0e6sh4'
 };
 
+// ============================================
+// AD Column mapping (Destination Board ID: 18396648497)
+// Temporary IDs to be adjusted by user later
+// ============================================
+const adColumnMapping = {
+    storeNumber:     'name', // Identification
+    struggle:        'long_text_mm1mahw1',
+    profitCenter:    'color_mm0emr3y',
+    designReq:       'long_text_mm0826s6',
+    budgetCheck:     'boolean_mkztx9ks',
+    budgetValue:     'numeric_mkztgwh4',
+    month:           'color_mkztmrwm',
+    objective:       'color_mkztnkcm',
+    radius:          'text_mkztjkth',
+    notes:           'long_text_mm1mjnc0',
+    adRef:           'board_relation_mm1rqd3x'
+};
+
 // Reverse map: mondayColumnId → formFieldName
 const reverseColumnMapping = Object.fromEntries(
     Object.entries(columnMapping).map(([field, col]) => [col, field])
@@ -75,6 +93,14 @@ const el = {
     formsCountLabel:     document.getElementById('formsCountLabel'),
     saveAllBtn:          document.getElementById('saveAllBtn'),
     backToSearchBtn:     document.getElementById('backToSearchBtn'),
+    // Step 4 (Ad Requests)
+    adFormsSection:      document.getElementById('adFormsSection'),
+    adFormsContainer:    document.getElementById('adFormsContainer'),
+    adFormsCountLabel:   document.getElementById('adFormsCountLabel'),
+    submitAdsBtn:        document.getElementById('submitAdsBtn'),
+    backToOnboardingBtn: document.getElementById('backToOnboardingBtn'),
+    adFormTemplate:      document.getElementById('adFormTemplate'),
+
     successSection:      document.getElementById('successSection'),
     successMessage:      document.getElementById('successMessage'),
     successDetails:      document.getElementById('successDetails'),
@@ -90,8 +116,20 @@ document.addEventListener('DOMContentLoaded', () => {
     initStorePreview();
     initSelectedStoresPanel();
     initFormsSection();
+    initAdFormsSection();
     loadStores();
+    loadAdReferences();
 });
+function initAdFormsSection() {
+    if (el.submitAdsBtn) el.submitAdsBtn.addEventListener('click', submitAdRequests);
+    if (el.backToOnboardingBtn) {
+        el.backToOnboardingBtn.addEventListener('click', () => {
+            el.adFormsSection.style.display = 'none';
+            el.formsSection.style.display = 'block';
+            el.formsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+    }
+}
 
 // ============================================
 // Navbar
@@ -146,6 +184,36 @@ async function loadStores() {
         showStatusMessage('Error loading stores. Please try again.', 'error');
     } finally {
         state.isSearching = false;
+    }
+}
+
+// ============================================
+// Load Ad References for Step 4
+// ============================================
+async function loadAdReferences() {
+    try {
+        const response = await fetch('/api/monday/ad-references');
+        const data = await response.json();
+        
+        if (data.success && data.references && data.references.length > 0) {
+            // Find the select element in the template directly
+            const adRefSelect = el.adFormTemplate.content.querySelector('select[name="adRef"]');
+            if (adRefSelect) {
+                // Keep only the first "Select reference" option
+                while (adRefSelect.options.length > 1) {
+                    adRefSelect.remove(1);
+                }
+                // Add the dynamic options (value is the item ID, text is the item Name)
+                data.references.forEach(ref => {
+                    const option = document.createElement('option');
+                    option.value = ref.id;
+                    option.textContent = ref.name;
+                    adRefSelect.appendChild(option);
+                });
+            }
+        }
+    } catch (err) {
+        console.error("Error loading ad references:", err);
     }
 }
 
@@ -530,14 +598,18 @@ async function submitAll() {
                 return `<div class="success-detail-row ${r.success ? 'ok' : 'fail'}">${icon} <strong>${r.storeName || r.itemId}</strong>: ${r.success ? 'Saved successfully' : (r.message || 'Error saving')}</div>`;
             }).join('');
 
-            el.formsSection.style.display = 'none';
-            el.successSection.style.display = 'block';
-            if (el.successMessage) {
-                el.successMessage.textContent = data.message || 'Store data saved successfully.';
-            }
             if (el.successDetails && details) {
                 el.successDetails.innerHTML = details;
             }
+
+            // Transition to Step 4: Ad Requests
+            setTimeout(() => {
+                el.formsSection.style.display = 'none';
+                renderAdForms();
+                el.adFormsSection.style.display = 'block';
+                el.adFormsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                showStatusMessage('Onboarding saved. Please fill out the Ad Requests.', 'success');
+            }, 1000);
         } else {
             showStatusMessage(data.message || 'Error saving data. Please try again.', 'error');
         }
@@ -547,6 +619,129 @@ async function submitAll() {
     } finally {
         state.isSaving = false;
         setButtonLoading(el.saveAllBtn, false);
+    }
+}
+
+// ============================================
+// Render one Ad form per selected store (Step 4)
+// ============================================
+function renderAdForms() {
+    el.adFormsContainer.innerHTML = '';
+    const count = state.selectedStores.length;
+    if (el.adFormsCountLabel) {
+        el.adFormsCountLabel.textContent = `${count} store${count > 1 ? 's' : ''}`;
+    }
+
+    state.selectedStores.forEach(store => {
+        const clone = el.adFormTemplate.content.cloneNode(true);
+        const card = clone.querySelector('.store-ad-card');
+
+        // Set store name in header
+        const nameSpan = card.querySelector('.store-form-name');
+        if (nameSpan) nameSpan.textContent = store.storeName;
+
+        // Tag the card with relevant IDs
+        card.dataset.itemId = store.itemId;
+        card.dataset.storeNumber = store.storeNumber; 
+
+        // Focus: prefill for Design Request
+        const designReq = card.querySelector('[name="designReq"]');
+        if (designReq) designReq.value = 'Focus: ';
+
+        // Attach validation
+        card.querySelectorAll('input, select, textarea').forEach(field => {
+            if (field.hasAttribute('required')) {
+                field.addEventListener('blur', () => validateField(field));
+                field.addEventListener('input', () => {
+                    if (field.classList.contains('error')) validateField(field);
+                });
+            }
+        });
+
+        el.adFormsContainer.appendChild(clone);
+    });
+}
+
+// ============================================
+// Submit All Ad Requests
+// ============================================
+async function submitAdRequests() {
+    if (state.isSaving) return;
+
+    let isValid = true;
+    const adsPayload = [];
+    const adCards = el.adFormsContainer.querySelectorAll('.store-ad-card');
+
+    adCards.forEach(card => {
+        const itemId = card.dataset.itemId;
+        const storeNumber = card.dataset.storeNumber;
+        const storeName = card.querySelector('.store-form-name')?.textContent || 'Store';
+        
+        // Collect fields
+        const fields = { storeNumber }; 
+        
+        // Loop through all ad inputs
+        const inputs = card.querySelectorAll('input, select, textarea');
+        inputs.forEach(input => {
+            const name = input.name;
+            if (!name) return;
+
+            let val = '';
+            if (input.type === 'checkbox') {
+                val = input.checked;
+            } else {
+                val = input.value.trim();
+            }
+
+            // All fields in Form 2 are mandatory per user request
+            if (input.hasAttribute('required') && !val && input.type !== 'checkbox') {
+                isValid = false;
+                input.classList.add('error');
+            }
+
+            fields[name] = val;
+        });
+
+        adsPayload.push({ itemId, storeName, fields });
+    });
+
+    if (!isValid) {
+        showStatusMessage('Please complete all required fields in all ad forms.', 'error');
+        return;
+    }
+
+    state.isSaving = true;
+    setButtonLoading(el.submitAdsBtn, true);
+
+    try {
+        const response = await fetch('/api/monday/save-ads', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ads: adsPayload })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            el.adFormsSection.style.display = 'none';
+            el.successSection.style.display = 'block';
+            if (el.successMessage) el.successMessage.textContent = 'Ad Requests submitted successfully!';
+            
+            const details = (data.results || []).map(r => {
+                const icon = r.success ? '✅' : '❌';
+                return `<div class="success-detail-row ${r.success ? 'ok' : 'fail'}">${icon} <strong>${r.storeName}</strong>: ${r.success ? 'Ad Request Created' : (r.message || 'Error')}</div>`;
+            }).join('');
+            
+            if (el.successDetails) el.successDetails.innerHTML = details;
+        } else {
+            showStatusMessage(data.message || 'Error submitting ad requests.', 'error');
+        }
+    } catch (err) {
+        console.error('Error submitting ads:', err);
+        showStatusMessage('Network error. Please try again.', 'error');
+    } finally {
+        state.isSaving = false;
+        setButtonLoading(el.submitAdsBtn, false);
     }
 }
 

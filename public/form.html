@@ -144,17 +144,53 @@
                 <div class="save-all-section">
                     <button class="btn btn-primary btn-large" id="saveAllBtn">
                         <span class="btn-text">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;margin-right:8px;vertical-align:middle;">
-                                <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/>
-                                <polyline points="17 21 17 13 7 13 7 21"/>
-                                <polyline points="7 3 7 8 15 8"/>
+                            Continue to Ad Requests
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;margin-left:8px;vertical-align:middle;">
+                                <path d="M5 12h14M12 5l7 7-7 7"/>
                             </svg>
-                            Save All Stores
                         </span>
                         <span class="btn-loader" style="display: none;"></span>
                     </button>
                     <button class="btn btn-secondary" id="backToSearchBtn" style="margin-left: 12px;">
                         ← Back to Search
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================== STEP 4: Ad Request & Details (Full Width) ===================== -->
+        <section class="forms-section" id="adFormsSection" style="display: none;">
+            <div class="forms-section-container">
+                <div class="forms-section-header">
+                    <div class="forms-section-title-row">
+                        <h2 class="forms-section-title">Ad Request & Details</h2>
+                        <span class="forms-count-label" id="adFormsCountLabel"></span>
+                    </div>
+                    <p class="forms-section-hint">Complete the advertising details for each store below</p>
+                </div>
+            </div>
+
+            <div class="forms-scroll-wrapper">
+                <div class="forms-container" id="adFormsContainer">
+                    <!-- One .store-ad-card per store, rendered dynamically -->
+                </div>
+            </div>
+
+            <div class="forms-section-container">
+                <div class="save-all-section" style="padding-bottom: 40px;">
+                    <button class="btn btn-primary btn-large" id="submitAdsBtn" style="background: var(--gradient-ad);">
+                        <span class="btn-text">
+                            Submit All Ad Requests
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;margin-left:8px;vertical-align:middle;">
+                                <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/>
+                                <polyline points="17 21 17 13 7 13 7 21"/>
+                                <polyline points="7 3 7 8 15 8"/>
+                            </svg>
+                        </span>
+                        <span class="btn-loader" style="display: none;"></span>
+                    </button>
+                    <button class="btn btn-secondary" id="backToOnboardingBtn" style="margin-left: 12px;">
+                        ← Back to Onboarding
                     </button>
                 </div>
             </div>
@@ -280,7 +316,7 @@
                     </div>
 
                     <div class="form-field">
-                        <label class="form-label">ADS Address *</label>
+                        <label class="form-label">Preferred Name for Ads *</label>
                         <input 
                             type="text" 
                             name="adsAddress" 
@@ -326,6 +362,7 @@
                             <option value="">Select option</option>
                             <option value="6">Yes</option>
                             <option value="4">No</option>
+                            <option value="7">No (Yet)</option>
                         </select>
                     </div>
                 </div>
@@ -353,6 +390,123 @@
                             rows="3"
                             placeholder="Describe general focus areas..."
                         ></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- ===================== Ad Request Template ===================== -->
+    <template id="adFormTemplate">
+        <div class="store-form-card store-ad-card">
+            <div class="store-form-header ad-header">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M11 5L6 9H2v6h4l5 4V5zM19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07" />
+                </svg>
+                <div class="store-form-header-text">
+                    <span class="store-form-label">Ad Request</span>
+                    <span class="store-form-name"><!-- storeName --></span>
+                </div>
+            </div>
+
+            <div class="store-form-body">
+                <div class="form-group">
+                    <div class="form-field">
+                        <label class="form-label">What’s the current struggle you want to tackle? *</label>
+                        <textarea name="struggle" class="form-textarea" required placeholder="Describe your current struggle..."></textarea>
+                    </div>
+
+                    <div class="form-field">
+                        <label class="form-label">What profit center do you want to promote? *</label>
+                        <select name="profitCenter" class="form-select" required>
+                            <option value="">Select profit center</option>
+                            <option value="0">MB + BNF</option>
+                            <option value="1">PR</option>
+                            <option value="2">RETURNS</option>
+                            <option value="3">PACK AND SHIP</option>
+                            <option value="4">NOW OPEN</option>
+                            <option value="6">OTHER</option>
+                            <option value="7">MB + BNF + PROMO</option>
+                            <option value="8">PR + PROMO</option>
+                            <option value="9">AIR SHIPPING</option>
+                            <option value="10">PCK & SHIP + PROMO</option>
+                            <option value="11">NOTARY</option>
+                            <option value="12">ONE STOP SHOP</option>
+                            <option value="13">SHR</option>
+                            <option value="14">FREIGHT</option>
+                        </select>
+                    </div>
+
+                    <div class="form-field">
+                        <label class="form-label">Design Request *</label>
+                        <textarea name="designReq" class="form-textarea" required placeholder="Pre-filled with Focus:"></textarea>
+                    </div>
+
+                    <div class="form-field checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="budgetCheck">
+                            <span>Campaign Budget check</span>
+                        </label>
+                    </div>
+
+                    <div class="form-field">
+                        <label class="form-label">Campaign Budget value *</label>
+                        <input type="text" name="budgetValue" class="form-input" required placeholder="Budget amount">
+                    </div>
+
+                    <div class="form-field">
+                        <label class="form-label">Month *</label>
+                        <select name="month" class="form-select" required>
+                            <option value="">Select month</option>
+                            <option value="0">January</option>
+                            <option value="1">February</option>
+                            <option value="2">March</option>
+                            <option value="3">April</option>
+                            <option value="4">May</option>
+                            <option value="6">June</option>
+                            <option value="7">July</option>
+                            <option value="8">August</option>
+                            <option value="9">September</option>
+                            <option value="10">October</option>
+                            <option value="11">November</option>
+                            <option value="12">December</option>
+                        </select>
+                    </div>
+
+                    <div class="form-field">
+                        <label class="form-label">Campaign Objective *</label>
+                        <select name="objective" class="form-select" required>
+                            <option value="">Select objective</option>
+                            <option value="0">Leads</option>
+                            <option value="2">Calls</option>
+                            <option value="3">Awareness</option>
+                            <option value="4">Engagement</option>
+                            <option value="5">Empty</option>
+                            <option value="6">Retargeting</option>
+                            <option value="7">Coupons</option>
+                            <option value="8">Directions</option>
+                        </select>
+                    </div>
+
+                    <div class="form-field">
+                        <label class="form-label">Mile Radius *</label>
+                        <input type="text" name="radius" class="form-input" required placeholder="Radius value">
+                    </div>
+
+                    <div class="form-field">
+                        <label class="form-label">Extra Notes *</label>
+                        <textarea name="notes" class="form-textarea" required placeholder="Add any extra notes..."></textarea>
+                    </div>
+
+                    <div class="form-field">
+                        <label class="form-label">Ad Reference *</label>
+                        <select name="adRef" class="form-select" required>
+                            <option value="">Select reference</option>
+                            <option value="Mailbox">Mailbox</option>
+                            <option value="Virtual">Virtual</option>
+                            <option value="Mothers">Mothers</option>
+                            <option value="Perks">Perks</option>
+                        </select>
                     </div>
                 </div>
             </div>
