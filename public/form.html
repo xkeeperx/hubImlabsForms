@@ -20,12 +20,10 @@
                 </svg>
                 <span>IMLABS</span>
             </a>
-            
             <ul class="nav-links" id="navLinks">
                 <li><a href="/" class="nav-link">Home</a></li>
                 <li><a href="/form.html" class="nav-link nav-link-active">Form</a></li>
             </ul>
-
             <button class="hamburger" id="hamburger" aria-label="Menu">
                 <span></span>
                 <span></span>
@@ -33,37 +31,57 @@
             </button>
         </div>
     </nav>
-
     <!-- Main Content -->
     <main class="form-page">
         <div class="container">
             <div class="form-header">
                 <h1 class="form-title">Onboarding Form</h1>
-                <p class="form-subtitle">Complete registration process for your store</p>
+                <p class="form-subtitle">Search and add one or more stores, then complete the form for each</p>
             </div>
-
-            <!-- Store Search Section -->
-            <section class="search-section">
+            <!-- ===================== STEP 1: Store Search ===================== -->
+            <section class="search-section" id="searchSection">
                 <div class="search-container">
-                    <h2 class="search-title">Search Store</h2>
-                    <p class="search-description">Select a store from the dropdown to begin process</p>
-                    
-                    <form class="search-form" id="searchForm">
-                        <div class="search-input-wrapper">
-                            <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <circle cx="11" cy="11" r="8"/>
-                                <path d="M21 21l-4.35-4.35"/>
-                            </svg>
-                            <select 
-                                id="storeInput" 
-                                class="search-input" 
-                                required
-                                autocomplete="off"
-                            >
-                                <option value="">Select a store</option>
-                            </select>
+                    <div id="searchView">
+                        <h2 class="search-title">Search Store</h2>
+                        <p class="search-description">Select a store from the dropdown to add it to your selection</p>
+                        
+                        <form class="search-form" id="searchForm">
+                            <div class="search-input-wrapper">
+                                <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="11" cy="11" r="8"/>
+                                    <path d="M21 21l-4.35-4.35"/>
+                                </svg>
+                                <select id="storeInput" class="search-input" autocomplete="off">
+                                    <option value="">Select a store</option>
+                                </select>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Simplified Selection Result -->
+                    <div id="selectionResult" class="selection-result" style="display: none;">
+                        <div class="selection-result-content">
+                            <div class="result-info">
+                                <span class="result-label">Store Found</span>
+                                <h3 class="result-name" id="storeNameResult">-</h3>
+                                <p class="result-owner">Owner: <span id="storeOwnerResult">Loading...</span></p>
+                            </div>
+                            <div class="result-actions">
+                                <button class="btn btn-primary" id="addStoreBtn">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;margin-right:6px;">
+                                        <circle cx="12" cy="12" r="10"/>
+                                        <path d="M12 8v8M8 12h8"/>
+                                    </svg>
+                                    Select Store
+                                </button>
+                                <button class="btn btn-secondary btn-icon" id="cancelStoreBtn" title="Search another">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;">
+                                        <path d="M18 6L6 18M6 6l12 12"/>
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
-                    </form>
+                    </div>
 
                     <!-- Status Messages -->
                     <div class="status-message" id="statusMessage" style="display: none;">
@@ -78,187 +96,75 @@
                 </div>
             </section>
 
-            <!-- Store Selection Card -->
-            <section class="store-selection" id="storeSelection" style="display: none;">
-                <div class="store-card">
-                    <div class="store-card-header">
-                        <svg class="store-icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M4 20h40v20H4z"/>
-                            <path d="M8 20V8h32v12"/>
-                            <path d="M20 20v20"/>
-                            <path d="M28 20v20"/>
-                        </svg>
-                        <h3 class="store-card-title">Store Found</h3>
-                    </div>
-                    <div class="store-card-body">
-                        <div class="store-info-row">
-                            <span class="store-info-label">Name:</span>
-                            <span class="store-info-value" id="storeName">-</span>
-                        </div>
-                        <div class="store-info-row">
-                            <span class="store-info-label">Status:</span>
-                            <span class="store-info-value store-status-pending" id="storeStatus">-</span>
-                        </div>
-                    </div>
-                    <div class="store-card-actions">
-                        <button class="btn btn-primary btn-block" id="selectStoreBtn">
-                            Select this store
-                        </button>
-                        <button class="btn btn-secondary btn-block" id="cancelStoreBtn">
-                            Search another store
-                        </button>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Active Store Indicator -->
-            <section class="active-store" id="activeStore" style="display: none;">
-                <div class="active-store-card">
-                    <div class="active-store-content">
-                        <div class="active-store-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M9 12l2 2 4-4"/>
-                                <circle cx="12" cy="12" r="10"/>
-                            </svg>
-                        </div>
-                        <div class="active-store-info">
-                            <span class="active-store-label">Selected store:</span>
-                            <span class="active-store-name" id="activeStoreName">-</span>
-                        </div>
-                    </div>
-                    <button class="btn-change-store" id="changeStoreBtn">
+            <!-- ===================== STEP 2: Selected Stores Panel ===================== -->
+            <section class="selected-stores-panel" id="selectedStoresPanel" style="display: none;">
+                <div class="selected-stores-header">
+                    <div class="selected-stores-title-row">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M18.36 6.64a9 9 0 11-12.73 0"/>
-                            <path d="M12 2v10"/>
+                            <path d="M9 12l2 2 4-4"/>
+                            <circle cx="12" cy="12" r="10"/>
                         </svg>
-                        Change
+                        <h3>Selected Stores</h3>
+                        <span class="stores-count-badge" id="storesCountBadge">0</span>
+                    </div>
+                    <p class="selected-stores-hint">You can continue adding more stores or proceed to fill the form</p>
+                    <div id="chipsContainer" class="chips-container"><!-- Store chips rendered dynamically --></div>
+                    <button class="btn btn-primary btn-large" id="proceedToFormBtn">
+                        <span>Continue to Form</span>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;margin-left:8px;">
+                            <path d="M5 12h14M12 5l7 7-7 7"/>
+                        </svg>
                     </button>
                 </div>
             </section>
 
-            <!-- Main Form -->
-            <section class="main-form-section" id="mainFormSection" style="display: none;">
-                <form class="main-form" id="mainForm">
-                    <!-- Store Information -->
-                    <div class="form-group">
-                        <h3 class="form-section-title">Store Information</h3>
-                        
-                        <div class="form-field">
-                            <label for="accountState" class="form-label">Account State *</label>
-                            <input
-                                type="text"
-                                id="accountState"
-                                name="accountState"
-                                class="form-input"
-                                required
-                                placeholder="Enter state code (e.g., NJ, TX, CA)"
-                                maxlength="2"
-                                pattern="[A-Za-z]{2}"
-                                title="Please enter a valid 2-letter state code (e.g., NJ, TX, CA)"
-                            >
-                        </div>
-
-                        <div class="form-field">
-                            <label for="storeOwner" class="form-label">Store Owner *</label>
-                            <input 
-                                type="text" 
-                                id="storeOwner" 
-                                name="storeOwner" 
-                                class="form-input" 
-                                required
-                                placeholder="Store owner name"
-                            >
-                        </div>
-
-                        <div class="form-field">
-                            <label for="adsAddress" class="form-label">ADS Address *</label>
-                            <input 
-                                type="text" 
-                                id="adsAddress" 
-                                name="adsAddress" 
-                                class="form-input" 
-                                required
-                                placeholder="Full ADS address"
-                            >
-                        </div>
-
-                        <div class="form-field">
-                            <label for="mailboxColor" class="form-label">Mailbox Color *</label>
-                            <select id="mailboxColor" name="mailboxColor" class="form-select" required>
-                                <option value="">Select mailbox color</option>
-                                <option value="Silver">Silver</option>
-                                <option value="Gold">Gold</option>
-                                <option value="No mailbox">No Mailbox</option>
-                            </select>
-                        </div>
-
-                        <div class="form-field">
-                            <label for="manager" class="form-label">Store Manager Info *</label>
-                            <input 
-                                type="text" 
-                                id="manager" 
-                                name="manager" 
-                                class="form-input" 
-                                required
-                                placeholder="Manager name"
-                            >
-                        </div>
-
-                        <div class="form-field">
-                            <label for="timeSavingKiosk" class="form-label">Time-saving Kiosk</label>
-                            <select id="timeSavingKiosk" name="timeSavingKiosk" class="form-select">
-                                <option value="">Select option</option>
-                                <option value="6">Yes</option>
-                                <option value="4">No</option>
-                            </select>
-                        </div>
+        </div> <!-- End of .container -->
+        
+        <!-- ===================== STEP 3: Multi-Store Forms (Full Width) ===================== -->
+        <section class="forms-section" id="formsSection" style="display: none;">
+            <div class="forms-section-container">
+                <div class="forms-section-header">
+                    <div class="forms-section-title-row">
+                        <h2 class="forms-section-title">Store Forms</h2>
+                        <span class="forms-count-label" id="formsCountLabel"></span>
                     </div>
+                    <p class="forms-section-hint">Fill in or update the information for each store below</p>
+                </div>
+            </div>
 
-                    <!-- Products Information -->
-                    <div class="form-group">
-                        <h3 class="form-section-title">Profit Center Info</h3>
-                        
-                        <div class="form-field">
-                            <label for="productsNotOffered" class="form-label">Services NOT Offered</label>
-                            <textarea 
-                                id="productsNotOffered" 
-                                name="productsNotOffered" 
-                                class="form-textarea" 
-                                rows="3"
-                                placeholder="List products NOT offered at this store..."
-                            ></textarea>
-                        </div>
-                    </div>
+            <!-- Horizontal scroll container for forms - Full Width -->
+            <div class="forms-scroll-wrapper">
+                <div class="forms-container" id="formsContainer">
+                    <!-- One .store-form-card per store, rendered dynamically -->
+                </div>
+            </div>
 
-                    <!-- Additional Information -->
-                    <div class="form-group">
-                        <h3 class="form-section-title">Additional Information</h3>
-                        
-                        <div class="form-field">
-                            <label for="generalFocus" class="form-label">Content Calendar Focus</label>
-                            <textarea 
-                                id="generalFocus" 
-                                name="generalFocus" 
-                                class="form-textarea" 
-                                rows="3"
-                                placeholder="Describe general focus areas..."
-                            ></textarea>
-                        </div>
-                    </div>
+            <!-- Single Save All button -->
+            <div class="forms-section-container">
+                <div class="save-all-section">
+                    <button class="btn btn-primary btn-large" id="saveAllBtn">
+                        <span class="btn-text">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;margin-right:8px;vertical-align:middle;">
+                                <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/>
+                                <polyline points="17 21 17 13 7 13 7 21"/>
+                                <polyline points="7 3 7 8 15 8"/>
+                            </svg>
+                            Save All Stores
+                        </span>
+                        <span class="btn-loader" style="display: none;"></span>
+                    </button>
+                    <button class="btn btn-secondary" id="backToSearchBtn" style="margin-left: 12px;">
+                        ← Back to Search
+                    </button>
+                </div>
+            </div>
+        </section>
 
-                    <!-- Form Actions -->
-                    <div class="form-actions">
-                        <button type="submit" class="btn btn-primary btn-large btn-block" id="submitBtn">
-                            <span class="btn-text">Save Information</span>
-                            <span class="btn-loader" style="display: none;"></span>
-                        </button>
-                    </div>
-                </form>
-            </section>
-
-            <!-- Success Message -->
+        <div class="container">
+            <!-- ===================== Success Message ===================== -->
             <section class="success-section" id="successSection" style="display: none;">
                 <div class="success-card">
+
                     <div class="success-icon">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
@@ -266,15 +172,192 @@
                         </svg>
                     </div>
                     <h2 class="success-title">Information Saved!</h2>
-                    <p class="success-message">
-                        Your store data has been successfully saved. 
-                        Your store status has been updated.
+                    <p class="success-message" id="successMessage">
+                        Your store data has been successfully saved.
                     </p>
+                    <div id="successDetails" class="success-details"></div>
                     <a href="/" class="btn btn-primary">Return to Home</a>
                 </div>
             </section>
         </div>
     </main>
+
+    <!-- ===================== Hidden Form Template ===================== -->
+    <!-- This is cloned for each store, never shown directly -->
+    <template id="formTemplate">
+        <div class="store-form-card">
+            <!-- Card header: store name, filled dynamically -->
+            <div class="store-form-header">
+                <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M4 20h40v20H4z"/>
+                    <path d="M8 20V8h32v12"/>
+                    <path d="M20 20v20"/>
+                    <path d="M28 20v20"/>
+                </svg>
+                <div class="store-form-header-text">
+                    <span class="store-form-label">Store</span>
+                    <span class="store-form-name"><!-- Filled by JS --></span>
+                </div>
+            </div>
+
+            <div class="store-form-body">
+                <!-- == Store Information == -->
+                <div class="form-group">
+                    <h3 class="form-section-title">Store Information</h3>
+
+                    <div class="form-field">
+                        <label class="form-label">Account State *</label>
+                        <input
+                            type="text"
+                            name="accountState"
+                            class="form-input"
+                            required
+                            placeholder="State code (e.g., NJ, TX, CA)"
+                            maxlength="2"
+                            pattern="[A-Za-z]{2}"
+                            title="Please enter a valid 2-letter state code"
+                        >
+                        <div class="info-text-container" style="margin-top: 8px; padding: 10px; background: var(--color-bg-tertiary); border: 1px dashed rgba(255,255,255,0.1); border-radius: 6px; font-size: 13px; color: var(--color-text-secondary); display: flex; align-items: flex-start; gap: 8px;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px; margin-top: 2px; flex-shrink: 0; color: var(--color-primary);">
+                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
+                                <circle cx="12" cy="10" r="3" />
+                            </svg>
+                            <div>
+                                <strong style="display: block; font-weight: 600; margin-bottom: 2px; color: var(--color-text-primary);">Store Address (from Monday)</strong>
+                                <span name="storeAddress">Store address will appear here...</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-field">
+                        <label class="form-label">Store Owner *</label>
+                        <input 
+                            type="text" 
+                            name="storeOwner" 
+                            class="form-input" 
+                            required
+                            placeholder="Store owner name"
+                        >
+                    </div>
+
+                    <div class="form-field">
+                        <label class="form-label">Owner's Email</label>
+                        <input 
+                            type="email" 
+                            name="ownerEmail" 
+                            class="form-input" 
+                            placeholder="Owner's email address"
+                        >
+                    </div>
+
+                    <div class="form-field">
+                        <label class="form-label">Owner's Mobile Number</label>
+                        <input 
+                            type="tel" 
+                            name="ownerMobile" 
+                            class="form-input" 
+                            placeholder="Owner's mobile number"
+                        >
+                    </div>
+
+                    <div class="form-field">
+                        <label class="form-label">Account Manager</label>
+                        <input 
+                            type="text" 
+                            name="accountManager" 
+                            class="form-input" 
+                            placeholder="Account manager name"
+                        >
+                    </div>
+
+                    <div class="form-field">
+                        <label class="form-label">Store Type</label>
+                        <select name="storeType" class="form-select">
+                            <option value="">Select store type</option>
+                            <option value="traditional">Traditional</option>
+                            <option value="non-traditional">Non-traditional</option>
+                        </select>
+                    </div>
+
+                    <div class="form-field">
+                        <label class="form-label">ADS Address *</label>
+                        <input 
+                            type="text" 
+                            name="adsAddress" 
+                            class="form-input" 
+                            required
+                            placeholder="Full ADS address"
+                        >
+                    </div>
+
+                    <div class="form-field">
+                        <label class="form-label">Mailbox Color *</label>
+                        <select name="mailboxColor" class="form-select" required>
+                            <option value="">Select mailbox color</option>
+                            <option value="Silver">Silver</option>
+                            <option value="Gold">Gold</option>
+                            <option value="No mailbox">No Mailbox</option>
+                        </select>
+                    </div>
+
+                    <div class="form-field">
+                        <label class="form-label">Co-op Board Member</label>
+                        <select name="coopBoardMember" class="form-select">
+                            <option value="">Select yes or no</option>
+                            <option value="Yes">Yes</option>
+                            <option value="No">No</option>
+                        </select>
+                    </div>
+
+                    <div class="form-field">
+                        <label class="form-label">Store Manager Info *</label>
+                        <input 
+                            type="text" 
+                            name="manager" 
+                            class="form-input" 
+                            required
+                            placeholder="Manager name"
+                        >
+                    </div>
+
+                    <div class="form-field">
+                        <label class="form-label">Time-saving Kiosk</label>
+                        <select name="timeSavingKiosk" class="form-select">
+                            <option value="">Select option</option>
+                            <option value="6">Yes</option>
+                            <option value="4">No</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- == Profit Center Info == -->
+                <div class="form-group">
+                    <div class="form-field">
+                        <label class="form-label">Services NOT Offered</label>
+                        <textarea 
+                            name="productsNotOffered" 
+                            class="form-textarea" 
+                            rows="3"
+                            placeholder="List services NOT offered at this store..."
+                        ></textarea>
+                    </div>
+                </div>
+
+                <!-- == Additional Information == -->
+                <div class="form-group">
+                    <div class="form-field">
+                        <label class="form-label">Content Calendar Focus</label>
+                        <textarea 
+                            name="generalFocus" 
+                            class="form-textarea" 
+                            rows="3"
+                            placeholder="Describe general focus areas..."
+                        ></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
 
     <!-- Footer -->
     <footer class="footer">
@@ -289,7 +372,7 @@
                 </a>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2024 Imlabs. All rights reserved.</p>
+                <p>&copy; 2026 Imlabs. All rights reserved.</p>
             </div>
         </div>
     </footer>

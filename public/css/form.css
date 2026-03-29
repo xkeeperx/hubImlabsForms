@@ -24,12 +24,12 @@
     --gradient-primary: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%);
     
     /* Spacing */
-    --spacing-xs: 0.25rem;
-    --spacing-sm: 0.5rem;
-    --spacing-md: 1rem;
-    --spacing-lg: 2rem;
-    --spacing-xl: 4rem;
-    --spacing-xxl: 6rem;
+    --spacing-xs: 0.2rem;
+    --spacing-sm: 0.4rem;
+    --spacing-md: 0.75rem;
+    --spacing-lg: 1.25rem;
+    --spacing-xl: 2rem;
+    --spacing-xxl: 3.5rem;
     
     /* Typography */
     --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -97,6 +97,14 @@ body {
     padding: 0 var(--container-padding);
 }
 
+/* The forms section needs to break out of the narrow container
+   so multiple form cards can scroll side by side */
+.forms-section {
+    width: 100%;
+    max-width: calc(100vw - var(--container-padding) * 2);
+}
+
+
 /* ============================================
    Navbar
    ============================================ */
@@ -116,7 +124,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    height: 80px;
+    height: 60px;
 }
 
 .logo {
@@ -193,13 +201,13 @@ body {
    ============================================ */
 .form-page {
     flex: 1;
-    padding-top: 120px;
-    padding-bottom: var(--spacing-xl);
+    padding-top: 80px;
+    padding-bottom: var(--spacing-lg);
 }
 
 .form-header {
     text-align: center;
-    margin-bottom: var(--spacing-xl);
+    margin-bottom: var(--spacing-lg);
 }
 
 .form-title {
@@ -221,9 +229,9 @@ body {
     align-items: center;
     justify-content: center;
     gap: var(--spacing-sm);
-    padding: var(--spacing-sm) var(--spacing-lg);
+    padding: 0.5rem 1rem;
     font-family: var(--font-family);
-    font-size: var(--font-size-base);
+    font-size: var(--font-size-sm);
     font-weight: 600;
     border: none;
     border-radius: var(--radius-md);
@@ -258,8 +266,8 @@ body {
 }
 
 .btn-large {
-    padding: var(--spacing-md) var(--spacing-xl);
-    font-size: var(--font-size-lg);
+    padding: var(--spacing-sm) var(--spacing-lg);
+    font-size: var(--font-size-base);
 }
 
 .btn-block {
@@ -279,14 +287,14 @@ body {
    Search Section
    ============================================ */
 .search-section {
-    margin-bottom: var(--spacing-xl);
+    margin-bottom: var(--spacing-lg);
 }
 
 .search-container {
     background: var(--color-bg-secondary);
     border: 1px solid rgba(255, 255, 255, 0.05);
-    border-radius: var(--radius-xl);
-    padding: var(--spacing-xl);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
 }
 
 .search-title {
@@ -304,8 +312,8 @@ body {
 
 .search-form {
     display: flex;
-    gap: var(--spacing-md);
-    margin-bottom: var(--spacing-lg);
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-md);
 }
 
 .search-input-wrapper {
@@ -325,7 +333,7 @@ body {
 
 .search-input {
     width: 100%;
-    padding: var(--spacing-md) var(--spacing-md) var(--spacing-md) 48px;
+    padding: var(--spacing-sm) var(--spacing-sm) var(--spacing-sm) 40px;
     background: var(--color-bg-tertiary);
     border: 2px solid transparent;
     border-radius: var(--radius-md);
@@ -397,85 +405,75 @@ body {
 }
 
 /* ============================================
-   Store Selection Card
+   Store Selection (Unified)
    ============================================ */
-.store-selection {
-    margin-bottom: var(--spacing-xl);
+.selection-result {
+    background: var(--color-bg-tertiary);
+    border: 1px solid var(--color-primary);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-sm) var(--spacing-md);
     animation: fadeIn 0.3s ease;
 }
 
-.store-card {
-    background: var(--color-bg-tertiary);
-    border: 2px solid var(--color-primary);
-    border-radius: var(--radius-xl);
-    padding: var(--spacing-xl);
-    box-shadow: 0 0 30px rgba(99, 102, 241, 0.2);
-}
-
-.store-card-header {
+.selection-result-content {
     display: flex;
     align-items: center;
-    gap: var(--spacing-md);
-    margin-bottom: var(--spacing-lg);
-}
-
-.store-icon {
-    width: 48px;
-    height: 48px;
-    color: var(--color-primary);
-}
-
-.store-card-title {
-    font-size: var(--font-size-xl);
-    font-weight: 600;
-}
-
-.store-card-body {
-    margin-bottom: var(--spacing-lg);
-}
-
-.store-info-row {
-    display: flex;
     justify-content: space-between;
-    padding: var(--spacing-md) 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.store-info-row:last-child {
-    border-bottom: none;
-}
-
-.store-info-label {
-    color: var(--color-text-secondary);
-}
-
-.store-info-value {
-    font-weight: 600;
-    color: var(--color-text-primary);
-}
-
-.store-status-pending {
-    color: var(--color-warning);
-}
-
-.store-card-actions {
-    display: flex;
     gap: var(--spacing-md);
+}
+
+.result-info {
+    flex: 1;
+}
+
+.result-label {
+    display: block;
+    font-size: var(--font-size-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-primary);
+    font-weight: 700;
+    margin-bottom: 2px;
+}
+
+.result-name {
+    font-size: var(--font-size-base);
+    font-weight: 700;
+    color: var(--color-text-primary);
+    margin: 0;
+    line-height: 1.2;
+}
+
+.result-owner {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    margin: 0;
+}
+
+.result-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.btn-icon {
+    padding: var(--spacing-sm);
+    aspect-ratio: 1;
 }
 
 /* ============================================
    Active Store Indicator
    ============================================ */
 .active-store {
-    margin-bottom: var(--spacing-xl);
+    margin-bottom: var(--spacing-lg);
     animation: fadeIn 0.3s ease;
 }
 
 .active-store-card {
     background: var(--color-bg-tertiary);
     border: 1px solid rgba(99, 102, 241, 0.3);
-    border-radius: var(--radius-lg);
-    padding: var(--spacing-md) var(--spacing-lg);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-xs) var(--spacing-md);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -557,8 +555,8 @@ body {
 .main-form {
     background: var(--color-bg-secondary);
     border: 1px solid rgba(255, 255, 255, 0.05);
-    border-radius: var(--radius-xl);
-    padding: var(--spacing-xl);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-lg);
 }
 
 .form-group {
@@ -566,10 +564,10 @@ body {
 }
 
 .form-section-title {
-    font-size: var(--font-size-xl);
+    font-size: var(--font-size-lg);
     font-weight: 600;
-    margin-bottom: var(--spacing-lg);
-    padding-bottom: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+    padding-bottom: var(--spacing-sm);
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
@@ -594,10 +592,10 @@ body {
 .form-select,
 .form-textarea {
     width: 100%;
-    padding: var(--spacing-md);
+    padding: var(--spacing-sm) var(--spacing-md);
     background: var(--color-bg-tertiary);
     border: 2px solid transparent;
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-sm);
     color: var(--color-text-primary);
     font-family: var(--font-family);
     font-size: var(--font-size-base);
@@ -653,14 +651,14 @@ body {
    Success Section
    ============================================ */
 .success-section {
-    padding: var(--spacing-xl) 0;
+    padding: var(--spacing-lg) 0;
 }
 
 .success-card {
     background: var(--color-bg-tertiary);
     border: 2px solid var(--color-success);
-    border-radius: var(--radius-xl);
-    padding: var(--spacing-xxl);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-xl);
     text-align: center;
 }
 
@@ -817,3 +815,354 @@ body {
         padding: var(--spacing-lg);
     }
 }
+
+/* ============================================
+   Selected Stores Panel (chips)
+   ============================================ */
+.selected-stores-panel {
+    margin-bottom: var(--spacing-lg);
+    animation: fadeIn 0.3s ease;
+}
+
+.selected-stores-panel > * {
+    background: var(--color-bg-secondary);
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-lg);
+}
+
+/* Combine header + chips + actions in one card */
+.selected-stores-panel {
+    background: var(--color-bg-secondary);
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-lg);
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.1);
+}
+
+.selected-stores-header {
+    margin-bottom: var(--spacing-lg);
+}
+
+.selected-stores-title-row {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    margin-bottom: var(--spacing-xs);
+}
+
+.selected-stores-title-row svg {
+    width: 22px;
+    height: 22px;
+    color: var(--color-success);
+    flex-shrink: 0;
+}
+
+.selected-stores-title-row h3 {
+    font-size: var(--font-size-xl);
+    font-weight: 600;
+}
+
+.stores-count-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 24px;
+    height: 24px;
+    background: var(--color-primary);
+    color: white;
+    font-size: var(--font-size-xs);
+    font-weight: 700;
+    border-radius: var(--radius-full);
+    padding: 0 6px;
+}
+
+.selected-stores-hint {
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-sm);
+    margin-bottom: var(--spacing-sm);
+}
+
+.chips-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-lg);
+    min-height: 44px;
+}
+
+/* Store chip (pill) */
+.store-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--color-bg-tertiary);
+    border: 1px solid rgba(99, 102, 241, 0.4);
+    border-radius: var(--radius-full);
+    padding: 6px 10px 6px 12px;
+    font-size: var(--font-size-sm);
+    animation: fadeIn 0.2s ease;
+    max-width: 320px;
+}
+
+.store-chip svg {
+    width: 14px;
+    height: 14px;
+    color: var(--color-primary);
+    flex-shrink: 0;
+}
+
+.store-chip-name {
+    font-weight: 600;
+    color: var(--color-text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 160px;
+}
+
+.store-chip-number {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+    white-space: nowrap;
+}
+
+.store-chip-remove {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    background: rgba(239, 68, 68, 0.12);
+    border: none;
+    border-radius: var(--radius-full);
+    cursor: pointer;
+    color: var(--color-error);
+    flex-shrink: 0;
+    transition: background var(--transition-fast);
+    padding: 0;
+}
+
+.store-chip-remove:hover {
+    background: rgba(239, 68, 68, 0.3);
+}
+
+.store-chip-remove svg {
+    width: 11px;
+    height: 11px;
+    color: var(--color-error);
+}
+
+#proceedToFormBtn {
+    margin-top: var(--spacing-md);
+    float: right;
+}
+
+/* ============================================
+   Forms Section (Full Width)
+   ============================================ */
+.forms-section {
+    animation: fadeIn 0.4s ease;
+    margin-bottom: var(--spacing-lg);
+    width: 100%;
+}
+
+.forms-section-container {
+    max-width: var(--container-max-width);
+    margin: 0 auto;
+    padding: 0 var(--container-padding);
+}
+
+.forms-section-header {
+    margin-bottom: var(--spacing-lg);
+}
+
+.forms-section-title-row {
+    display: flex;
+    align-items: baseline;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-xs);
+}
+
+.forms-section-title {
+    font-size: var(--font-size-2xl);
+    font-weight: 700;
+}
+
+.forms-count-label {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    font-weight: 500;
+}
+
+.forms-section-hint {
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-sm);
+}
+
+/* The wrapper controls overflow so scrollbar appears nicely - Full Width */
+.forms-scroll-wrapper {
+    overflow-x: auto;
+    overflow-y: visible;
+    padding: var(--spacing-sm) var(--container-padding) var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
+    /* Custom scrollbar */
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-primary) var(--color-bg-secondary);
+}
+
+.forms-scroll-wrapper::-webkit-scrollbar {
+    height: 6px;
+}
+
+.forms-scroll-wrapper::-webkit-scrollbar-track {
+    background: var(--color-bg-secondary);
+    border-radius: 3px;
+}
+
+.forms-scroll-wrapper::-webkit-scrollbar-thumb {
+    background: var(--color-primary);
+    border-radius: 3px;
+}
+
+.forms-container {
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+    /* Don't wrap — horizontal scroll */
+    flex-wrap: nowrap;
+    /* Make sure it sizes to content */
+    width: max-content;
+    min-width: 100%;
+}
+
+/* ============================================
+   Per-store form card
+   ============================================ */
+.store-form-card {
+    min-width: 440px;
+    max-width: 480px;
+    flex-shrink: 0;
+    background: var(--color-bg-secondary);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    flex-direction: column;
+    animation: fadeIn 0.35s ease;
+}
+
+.store-form-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    background: var(--gradient-primary);
+    padding: var(--spacing-sm) var(--spacing-md);
+}
+
+.store-form-header svg {
+    width: 28px;
+    height: 28px;
+    color: rgba(255,255,255,0.85);
+    flex-shrink: 0;
+}
+
+.store-form-header-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.store-form-label {
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    color: rgba(255,255,255,0.7);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.store-form-name {
+    font-size: var(--font-size-base);
+    font-weight: 700;
+    color: #ffffff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.store-form-body {
+    padding: var(--spacing-md);
+    flex: 1;
+    overflow-y: auto;
+}
+
+/* ============================================
+   Save All Section
+   ============================================ */
+.save-all-section {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-md) 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+/* ============================================
+   Success Details (per-store results)
+   ============================================ */
+.success-details {
+    margin: var(--spacing-lg) auto;
+    max-width: 480px;
+    text-align: left;
+}
+
+.success-detail-row {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-sm);
+    margin-bottom: var(--spacing-xs);
+}
+
+.success-detail-row.ok {
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.success-detail-row.fail {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+/* ============================================
+   Responsive adjustments for multi-store
+   ============================================ */
+@media (max-width: 768px) {
+    .store-form-card {
+        min-width: 320px;
+        max-width: 360px;
+    }
+
+    .selected-stores-actions {
+        justify-content: stretch;
+    }
+
+    .selected-stores-actions .btn {
+        width: 100%;
+    }
+
+    .save-all-section {
+        flex-direction: column;
+    }
+
+    .save-all-section .btn {
+        width: 100%;
+    }
+}
+

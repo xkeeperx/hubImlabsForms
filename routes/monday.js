@@ -208,6 +208,134 @@ router.get("/stores", async (req, res) => {
 });
 
 /**
+ * GET /api/monday/item/:itemId
+ * Fetches all form-relevant column values for a specific item (for prefilling)
+ */
+router.get("/item/:itemId", async (req, res) => {
+  try {
+    const { itemId } = req.params;
+
+    if (!itemId) {
+      return res.status(400).json({ success: false, message: "itemId is required" });
+    }
+
+    // Column IDs that match the form fields
+    const formColumnIds = [
+      "dropdown_mkzna8xm",
+      "text_mkzn3j45",
+      "long_text_mkztccnb",
+      "color_mm1tkp4y",
+      "phone_mm0e9qe0",
+      "person",
+      "text_mm0e9v1j",
+      "color_mm1vhm22",
+      "text_mkzng7d9",
+      "color_mkztj02s",
+      "text_mm0e3nk4",
+      "color_mm0ee5w9",
+      "text_mm0exkpv",
+      "text_mm0e6sh4"
+    ];
+
+    const columnIdsGql = formColumnIds.map(id => `"${id}"`).join(", ");
+
+    const query = `
+      query {
+        items(ids: [${itemId}]) {
+          id
+          name
+          column_values(ids: [${columnIdsGql}]) {
+            id
+            text
+            value
+          }
+        }
+      }
+    `;
+
+    const response = await axios.post(
+      MONDAY_API_URL,
+      { query },
+      { headers: getMondayHeaders() }
+    );
+
+    const item = response.data.data?.items?.[0];
+
+    if (!item) {
+      return res.status(404).json({ success: false, message: "Item not found" });
+    }
+
+    // Build fields map: { columnId: textValue }
+    const fields = {};
+    item.column_values.forEach(col => {
+      fields[col.id] = col.text || "";
+    });
+
+    return res.json({
+      success: true,
+      itemId: item.id,
+      storeName: item.name,
+      fields
+    });
+  } catch (error) {
+    console.error("Error fetching item:", error.response?.data || error.message);
+    return res.status(500).json({ success: false, message: "Error fetching item data." });
+  }
+});
+
+/**
+ * GET /api/monday/item/:itemId/full
+ * Fetches ALL column values for a specific item (for testing/inspection)
+ */
+router.get("/item/:itemId/full", async (req, res) => {
+  try {
+    const { itemId } = req.params;
+
+    if (!itemId) {
+      return res.status(400).json({ success: false, message: "itemId is required" });
+    }
+
+    const query = `
+      query {
+        items(ids: [${itemId}]) {
+          id
+          name
+          column_values {
+            id
+            text
+            value
+            type
+          }
+        }
+      }
+    `;
+
+    const response = await axios.post(
+      MONDAY_API_URL,
+      { query },
+      { headers: getMondayHeaders() }
+    );
+
+    const item = response.data.data?.items?.[0];
+
+    if (!item) {
+      return res.status(404).json({ success: false, message: "Item not found" });
+    }
+
+    return res.json({
+      success: true,
+      itemId: item.id,
+      storeName: item.name,
+      totalColumns: item.column_values.length,
+      columns: item.column_values
+    });
+  } catch (error) {
+    console.error("Error fetching full item:", error.response?.data || error.message);
+    return res.status(500).json({ success: false, message: "Error fetching item data." });
+  }
+});
+
+/**
  * GET /api/monday/test
  * Test endpoint to retrieve all items from the board
  */
@@ -458,22 +586,44 @@ router.get("/diagnose", async (req, res) => {
 
 /**
  * POST /api/monday/save
- * Saves form data to the existing Monday.com item
+ * Saves form data to one or multiple Monday.com items.
+ * Body can be: { itemId, fields } (single) or { stores: [{ itemId, fields }] } (batch)
  */
 router.post("/save", async (req, res) => {
   try {
-    const { itemId, fields } = req.body;
-    
-    // Validation: itemId is required
-    if (!itemId) {
-      console.log("❌ ERROR: itemId es requerido");
-      return res.status(400).json({
-        success: false,
-        message: "itemId is required",
-      });
+    // Normalize to always work with an array
+    let storesToSave = [];
+    if (req.body.stores && Array.isArray(req.body.stores)) {
+      storesToSave = req.body.stores;
+    } else if (req.body.itemId) {
+      storesToSave = [{ itemId: req.body.itemId, fields: req.body.fields }];
+    } else {
+      return res.status(400).json({ success: false, message: "itemId or stores array is required" });
     }
 
-    // Verify that the item exists and is still in "pending" status
+    const results = await Promise.all(storesToSave.map(async ({ itemId, fields }) => {
+      return await saveOneStore(itemId, fields);
+    }));
+
+    const allSuccess = results.every(r => r.success);
+    return res.json({
+      success: allSuccess,
+      results,
+      message: allSuccess ? "All stores saved successfully" : "Some stores had errors"
+    });
+  } catch (error) {
+    console.error("Error in batch save:", error.message);
+    return res.status(500).json({ success: false, message: "Error saving data." });
+  }
+});
+
+/**
+ * Internal helper: saves a single store's fields to Monday.com and Google Sheets
+ */
+async function saveOneStore(itemId, fields) {
+  try {
+    const { itemId: _id, fields: _f } = { itemId, fields };
+    if (!itemId) return { success: false, itemId, message: "itemId is required" };
     const verifyQuery = `
       query {
         items(ids: [${itemId}]) {
@@ -491,24 +641,18 @@ router.post("/save", async (req, res) => {
     const verifyResponse = await axios.post(
       MONDAY_API_URL,
       { query: verifyQuery },
-      {
-        headers: getMondayHeaders(),
-      },
+      { headers: getMondayHeaders() }
     );
 
     const item = verifyResponse.data.data?.items?.[0];
+    if (!item) return { success: false, itemId, message: "Store not found" };
 
-    if (!item) {
-      console.log("❌ ERROR: Item no encontrado");
-      return res.status(404).json({
-        success: false,
-        message: "Store not found",
-      });
-    }
+    // Remove "person" from fields to update, since passing a string to a person column will cause a parse error
+    const mondayFields = { ...fields };
+    delete mondayFields["person"];
 
-    // Build values object for the mutation
-    const columnValues = JSON.stringify(fields);
-    // Mutation to update multiple columns
+    // Update columns
+    const columnValues = JSON.stringify(mondayFields);
     const updateMutation = `
       mutation {
         change_multiple_column_values(
@@ -520,24 +664,9 @@ router.post("/save", async (req, res) => {
         }
       }
     `;
+    await axios.post(MONDAY_API_URL, { query: updateMutation }, { headers: getMondayHeaders() });
 
-    try {
-      const updateResponse = await axios.post(
-        MONDAY_API_URL,
-        { query: updateMutation },
-        {
-          headers: getMondayHeaders(),
-        },
-      );
-    } catch (updateError) {
-      console.log(
-        "❌ ERROR en actualización de columnas:",
-        updateError.response?.data || updateError.message,
-      );
-      throw updateError;
-    }
-
-    // Update status to the configured value
+    // Update status
     const statusValue = JSON.stringify({ label: MONDAY_STATUS_VALUE });
     const statusMutation = `
       mutation {
@@ -551,85 +680,42 @@ router.post("/save", async (req, res) => {
         }
       }
     `;
+    await axios.post(MONDAY_API_URL, { query: statusMutation }, { headers: getMondayHeaders() });
 
-    try {
-      const statusResponse = await axios.post(
-        MONDAY_API_URL,
-        { query: statusMutation },
-        {
-          headers: getMondayHeaders(),
-        },
-      );
-    } catch (statusError) {
-      console.log(
-        "❌ ERROR en actualización de estado:",
-        statusError.response?.data || statusError.message,
-      );
-      throw statusError;
-    }
-
-    // Prepare data for Google Sheets
+    // Google Sheets
     const googleSheetsData = {
       storeId: item.id,
       storeName: item.name,
       accountState: fields.dropdown_mkzna8xm || '',
       storeOwner: fields.text_mkzn3j45 || '',
+      ownerEmail: fields.long_text_mkztccnb || '',
+      storeType: fields.color_mm1tkp4y?.label || fields.color_mm1tkp4y || '',
+      ownerMobile: fields.phone_mm0e9qe0?.phone || fields.phone_mm0e9qe0 || '',
+      accountManager: fields.person || '',
+      storeAddress: fields.text_mm0e9v1j || '',
+      coopBoardMember: fields.color_mm1vhm22?.label || fields.color_mm1vhm22 || '',
       adsAddress: fields.text_mkzng7d9 || '',
-      mailboxColor: fields.color_mkztj02s || '',
+      mailboxColor: fields.color_mkztj02s?.label || fields.color_mkztj02s || '',
       manager: fields.text_mm0e3nk4 || '',
-      timeSavingKiosk: fields.color_mm0ee5w9 || '',
+      timeSavingKiosk: fields.color_mm0ee5w9?.index || fields.color_mm0ee5w9 || '',
       productsNotOffered: fields.text_mm0exkpv || '',
       generalFocus: fields.text_mm0e6sh4 || ''
     };
 
-    // Try to save to Google Sheets
+    let sheetsResult = { success: false };
     try {
-      const googleSheetsResult = await appendToGoogleSheet(googleSheetsData);
-      
-      if (googleSheetsResult.success) {
-        return res.json({
-          success: true,
-          itemId: itemId,
-          message: "Data saved successfully",
-          googleSheets: googleSheetsResult
-        });
-      } else {
-        return res.json({
-          success: true,
-          itemId: itemId,
-          message: "Data saved successfully, but there was an issue with Google Sheets",
-          googleSheets: googleSheetsResult
-        });
-      }
+      sheetsResult = await appendToGoogleSheet(googleSheetsData);
     } catch (sheetsError) {
-      console.log("❌ ERROR CRÍTICO AL GUARDAR EN GOOGLE SHEETS:", sheetsError.message);
-      console.log("Stack trace:", sheetsError.stack);
-      
-      // Continue even if Google Sheets fails
-      return res.json({
-        success: true,
-        itemId: itemId,
-        message: "Data saved successfully, but there was an issue with Google Sheets",
-        googleSheets: {
-          success: false,
-          error: sheetsError.message
-        }
-      });
+      console.error("Google Sheets error for item", itemId, sheetsError.message);
     }
-  } catch (error) {
-    console.log(
-      "❌ ERROR GENERAL EN GUARDADO:",
-      error.response?.data || error.message,
-    );
-    console.log("Stack trace:", error.stack);
-    console.log("========================================");
 
-    return res.status(500).json({
-      success: false,
-      message: "Error saving data. Please try again.",
-      error: error.response?.data || error.message,
-    });
+    return { success: true, itemId, storeName: item.name, googleSheets: sheetsResult };
+  } catch (error) {
+    console.error("Error saving store", itemId, error.response?.data || error.message);
+    return { success: false, itemId, message: error.message };
   }
-});
+}
 
 module.exports = router;
+
+
