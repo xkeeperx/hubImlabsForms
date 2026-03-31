@@ -13,8 +13,9 @@ const columnMapping = {
     storeType:          'color_mm1tkp4y',
     ownerMobile:        'phone_mm0e9qe0',
     accountManager:     'person',
+    mco:                'long_text_mm1yxr45',
     storeAddress:       'text_mm0e9v1j',
-    coopBoardMember:    'color_mm1vhm22',
+    coopBoardMember:    'long_text_mm1ym5z5',
     adsAddress:         'text_mkzng7d9',
     mailboxColor:       'color_mkztj02s',
     manager:            'text_mm0e3nk4',
@@ -560,7 +561,7 @@ async function submitAll() {
                 if (fieldName === 'accountState') {
                     // Dropdown columns in Monday require { labels: ["VALUE"] } — note plural, and it's an array
                     fields[colId] = { labels: [val.toUpperCase()] };
-                } else if (fieldName === 'mailboxColor' || fieldName === 'storeType' || fieldName === 'coopBoardMember') {
+                } else if (fieldName === 'mailboxColor' || fieldName === 'storeType') {
                     fields[colId] = { label: val };
                 } else if (fieldName === 'timeSavingKiosk') {
                     fields[colId] = { index: parseInt(val) };
@@ -626,6 +627,48 @@ async function submitAll() {
 // ============================================
 // Render one Ad form per selected store (Step 4)
 // ============================================
+
+// ============================================
+// Month Validation (Business Rule)
+// ============================================
+function getMonthIndex(val) {
+    const v = parseInt(val);
+    if (isNaN(v)) return -1;
+    // Monday status values: 0-4 (Jan-May) map to 0-4.
+    if (v <= 4) return v;
+    // Monday status values: 6-12 (Jun-Dec) map to 5-11.
+    if (v >= 6) return v - 1;
+    return -1;
+}
+
+function validateMonthSelection(select) {
+    const errorDiv = select.parentElement.querySelector('.month-error-message');
+    if (!select.value) {
+        if (errorDiv) errorDiv.style.display = 'none';
+        return;
+    }
+
+    const now = new Date();
+    const curMonth = now.getMonth();
+    const curDay = now.getDate();
+    const selMonth = getMonthIndex(select.value);
+
+    // Business rule: If past month OR (current month AND day > 10)
+    let isInvalid = false;
+    if (selMonth < curMonth) {
+        isInvalid = true;
+    } else if (selMonth === curMonth && curDay > 10) {
+        isInvalid = true;
+    }
+
+    if (isInvalid) {
+        alert("You will schedule ads for this same month.");
+        if (errorDiv) errorDiv.style.display = 'block';
+    } else {
+        if (errorDiv) errorDiv.style.display = 'none';
+    }
+}
+
 function renderAdForms() {
     el.adFormsContainer.innerHTML = '';
     const count = state.selectedStores.length;
@@ -647,7 +690,7 @@ function renderAdForms() {
 
         // Focus: prefill for Design Request
         const designReq = card.querySelector('[name="designReq"]');
-        if (designReq) designReq.value = 'Focus: \n Benefits to include:';
+        if (designReq) designReq.value = 'Focus: \nBenefits to include:';
 
         // Attach validation
         card.querySelectorAll('input, select, textarea').forEach(field => {
@@ -657,60 +700,29 @@ function renderAdForms() {
                     if (field.classList.contains('error')) validateField(field);
                 });
             }
+            
+            // Specific validation for month selection
+            if (field.name === 'month') {
+                field.addEventListener('change', () => validateMonthSelection(field));
+            }
         });
-
-        applyMonthValidation(card);
         el.adFormsContainer.appendChild(clone);
     });
 }
 
-// ============================================
-// Month Validation Logic
-// ============================================
-function applyMonthValidation(formEl) {
-    const monthSelect = formEl.querySelector('select[name="month"]');
-    if (!monthSelect) return;
-
-    const today = new Date();
-    const currentMonth = today.getMonth(); // 0-11
-    const currentDay = today.getDate();
-
-    // If day >= 11, minimum valid is next month (diff = 1). Else, current month (diff = 0).
-    const minDiff = currentDay >= 11 ? 1 : 0;
-    const maxDiff = 6; // Allow booking up to 6 months in advance
-
-    // HTML option values to internal month index (0-11)
-    const valueToIndex = {
-        "0": 0, "1": 1, "2": 2, "3": 3, "4": 4, 
-        "6": 5, "7": 6, "8": 7, "9": 8, "10": 9, 
-        "11": 10, "12": 11
-    };
-
-    Array.from(monthSelect.options).forEach(opt => {
-        if (!opt.value) return; // Skip placeholder
-        
-        const optMonth = valueToIndex[opt.value];
-        if (optMonth === undefined) return;
-
-        // Circular months difference 
-        const diff = (optMonth - currentMonth + 12) % 12;
-        
-        if (diff < minDiff || diff > maxDiff) {
-            opt.disabled = true;
-            // Optionally hide it visually for clarity
-            opt.style.display = 'none'; 
-        }
-    });
-
-    // Auto-select the first available valid option if none is selected
-    // Note: It's usually better to just let the user pick, starting from placeholder.
-}
 
 // ============================================
 // Submit All Ad Requests
 // ============================================
 async function submitAdRequests() {
     if (state.isSaving) return;
+
+    const tickbox = document.querySelector('input[name="tickbox"]');
+    if (tickbox && !tickbox.checked) {
+        showStatusMessage('No puede guardar sin confirmar la claridad de su paquete.', 'error');
+        alert('No puede guardar. Debe confirmar que tiene claridad sobre lo que su paquete incluye.');
+        return;
+    }
 
     let isValid = true;
     const adsPayload = [];

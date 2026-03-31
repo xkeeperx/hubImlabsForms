@@ -177,6 +177,24 @@
             </div>
 
             <div class="forms-section-container">
+                <div class="forms-section-header">
+                    <div class="forms-section-title-row">
+                        <p class="forms-section-hint">Do you have clarity on what your package includes and everything we will be working on monthly for your location(s)?</p>
+                        <input type="checkbox" name="tickbox" value="yes">
+                    </div>
+                    <div class="forms-section-title-row">
+                        <h3 class="forms-section-title">Support Call</h3>
+                        <a href="https://meetings-na2.hubspot.com/stephanie964/imlabs-support-session?uuid=62db4a49-4231-4783-951f-77906f21c413">Support</a>
+                    </div>
+                    <div class="forms-section-title-row">
+                        <h3 class="forms-section-title">Check-in Call</h3>
+                        <a href="https://meetings-na2.hubspot.com/ariela-camhi?uuid=41303327-d3d3-404c-8e87-91a3dee36cc8">Ariela</a>
+                        <a href="https://meetings-na2.hubspot.com/alejandra-betancourt/imlabs-check-in-calls-with-ale?uuid=7355cad6-70ea-410d-b80a-1241bd47e2cb">Alejandra</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="forms-section-container">
                 <div class="save-all-section" style="padding-bottom: 40px;">
                     <button class="btn btn-primary btn-large" id="submitAdsBtn" style="background: var(--gradient-ad);">
                         <span class="btn-text">
@@ -307,6 +325,16 @@
                     </div>
 
                     <div class="form-field">
+                        <label class="form-label">Are you a MCO?</label>
+                        <input 
+                            type="text" 
+                            name="mco" 
+                            class="form-input" 
+                            placeholder="Are you a MCO?"
+                        >
+                    </div>
+
+                    <div class="form-field">
                         <label class="form-label">Store Type</label>
                         <select name="storeType" class="form-select">
                             <option value="">Select store type</option>
@@ -316,12 +344,11 @@
                     </div>
 
                     <div class="form-field">
-                        <label class="form-label">Preferred Name for Ads *</label>
+                        <label class="form-label">Preferred Name for Ads</label>
                         <input 
                             type="text" 
                             name="adsAddress" 
                             class="form-input" 
-                            required
                             placeholder="Full ADS address"
                         >
                     </div>
@@ -332,26 +359,28 @@
                             <option value="">Select mailbox color</option>
                             <option value="Silver">Silver</option>
                             <option value="Gold">Gold</option>
+                            <option value="Virtual">Virtual</option>
                             <option value="No mailbox">No Mailbox</option>
                         </select>
                     </div>
 
                     <div class="form-field">
                         <label class="form-label">Co-op Board Member</label>
-                        <select name="coopBoardMember" class="form-select">
-                            <option value="">Select yes or no</option>
-                            <option value="Yes">Yes</option>
-                            <option value="No">No</option>
-                        </select>
+                        <input 
+                            type="text" 
+                            name="coopBoardMember" 
+                            class="form-input" 
+                            required
+                            placeholder="Co-op Board Member"
+                        >
                     </div>
 
                     <div class="form-field">
-                        <label class="form-label">Store Manager Info *</label>
+                        <label class="form-label">Store Manager Info</label>
                         <input 
                             type="text" 
                             name="manager" 
                             class="form-input" 
-                            required
                             placeholder="Manager name"
                         >
                     </div>
@@ -421,18 +450,18 @@
                         <select name="profitCenter" class="form-select" required>
                             <option value="">Select profit center</option>
                             <option value="0">MB + BNF</option>
-                            <option value="1">PR</option>
-                            <option value="2">RETURNS</option>
-                            <option value="3">PACK AND SHIP</option>
-                            <option value="4">NOW OPEN</option>
-                            <option value="6">OTHER</option>
                             <option value="7">MB + BNF + PROMO</option>
+                            <option value="1">PR</option>
                             <option value="8">PR + PROMO</option>
-                            <option value="9">AIR SHIPPING</option>
+                            <option value="3">PACK AND SHIP</option>
                             <option value="10">PCK & SHIP + PROMO</option>
+                            <option value="9">AIR SHIPPING</option>
+                            <option value="2">RETURNS</option>
                             <option value="11">NOTARY</option>
-                            <option value="12">ONE STOP SHOP</option>
                             <option value="13">SHR</option>
+                            <option value="4">NOW OPEN</option>
+                            <option value="12">ONE STOP SHOP</option>
+                            <option value="6">OTHER</option>
                             <option value="14">FREIGHT</option>
                         </select>
                     </div>
@@ -445,13 +474,13 @@
                     <div class="form-field checkbox-group">
                         <label class="checkbox-label">
                             <input type="checkbox" name="budgetCheck">
-                            <span>Campaign Budget check</span>
+                            <span>Extra Budget</span>
                         </label>
                     </div>
 
                     <div class="form-field">
-                        <label class="form-label">Campaign Budget value *</label>
-                        <input type="text" name="budgetValue" class="form-input" required placeholder="Budget amount">
+                        <label class="form-label">Extra Budget value *</label>
+                        <input type="text" name="budgetValue" class="form-input" required placeholder="Add number only">
                     </div>
 
                     <div class="form-field">
@@ -471,6 +500,9 @@
                             <option value="11">November</option>
                             <option value="12">December</option>
                         </select>
+                        <div class="month-error-message" style="color: var(--color-error); display: none; margin-top: 8px; font-size: 13px; font-weight: 500;">
+                            You will schedule ads for this same month.
+                        </div>
                     </div>
 
                     <div class="form-field">
@@ -481,7 +513,6 @@
                             <option value="2">Calls</option>
                             <option value="3">Awareness</option>
                             <option value="4">Engagement</option>
-                            <option value="5">Empty</option>
                             <option value="6">Retargeting</option>
                             <option value="7">Coupons</option>
                             <option value="8">Directions</option>
