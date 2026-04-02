@@ -4,9 +4,10 @@
 :root {
     /* Colors */
     --color-bg-primary: #ffffff;
-    --color-bg-secondary: #f6f6f6;
+    --color-bg-secondary: #f8fdff;
     --color-bg-tertiary: #F4F6F8;
     --color-text-primary: #0B0F14;
+    --color-text-primary2: #ffffff;
     --color-text-secondary: #121821;
     --color-text-muted: #1B2430;
     
@@ -134,7 +135,7 @@ body {
     align-items: center;
     gap: var(--spacing-sm);
     text-decoration: none;
-    color: var(--color-text-primary);
+    color: var(--color-text-primary2);
     font-weight: 700;
     font-size: var(--font-size-xl);
 }
@@ -249,7 +250,7 @@ body {
 
 .btn-primary {
     background: var(--gradient-primary);
-    color: var(--color-text-primary);
+    color: var(--color-text-primary2);
 }
 
 .btn-primary:hover:not(:disabled) {
@@ -1129,7 +1130,7 @@ body {
 .save-all-section {
     display: flex;
     align-items: center;
-    justify-content: flex-start;
+    justify-content: center;
     flex-wrap: wrap;
     gap: var(--spacing-sm);
     padding: var(--spacing-md) 0;

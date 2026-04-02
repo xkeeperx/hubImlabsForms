@@ -142,6 +142,9 @@
             <!-- Single Save All button -->
             <div class="forms-section-container">
                 <div class="save-all-section">
+                    <button class="btn btn-secondary" id="backToSearchBtn" style="margin-left: 12px;">
+                        ← Back to Search
+                    </button>
                     <button class="btn btn-primary btn-large" id="saveAllBtn">
                         <span class="btn-text">
                             Continue to Ad Requests
@@ -150,9 +153,6 @@
                             </svg>
                         </span>
                         <span class="btn-loader" style="display: none;"></span>
-                    </button>
-                    <button class="btn btn-secondary" id="backToSearchBtn" style="margin-left: 12px;">
-                        ← Back to Search
                     </button>
                 </div>
             </div>
@@ -179,23 +179,28 @@
             <div class="forms-section-container">
                 <div class="forms-section-header">
                     <div class="forms-section-title-row">
+                        <h4>
                         <p class="forms-section-hint">Do you have clarity on what your package includes and everything we will be working on monthly for your location(s)?</p>
                         <input type="checkbox" name="tickbox" value="yes">
+                        </h4>
                     </div>
                     <div class="forms-section-title-row">
                         <h3 class="forms-section-title">Support Call</h3>
-                        <a href="https://meetings-na2.hubspot.com/stephanie964/imlabs-support-session?uuid=62db4a49-4231-4783-951f-77906f21c413">Support</a>
+                        <a href="https://meetings-na2.hubspot.com/stephanie964/imlabs-support-session?uuid=62db4a49-4231-4783-951f-77906f21c413" target="_blank">Support</a>
                     </div>
                     <div class="forms-section-title-row">
                         <h3 class="forms-section-title">Check-in Call</h3>
-                        <a href="https://meetings-na2.hubspot.com/ariela-camhi?uuid=41303327-d3d3-404c-8e87-91a3dee36cc8">Ariela</a>
-                        <a href="https://meetings-na2.hubspot.com/alejandra-betancourt/imlabs-check-in-calls-with-ale?uuid=7355cad6-70ea-410d-b80a-1241bd47e2cb">Alejandra</a>
+                        <a href="https://meetings-na2.hubspot.com/ariela-camhi?uuid=41303327-d3d3-404c-8e87-91a3dee36cc8" target="_blank">Ariela</a>
+                        <a href="https://meetings-na2.hubspot.com/alejandra-betancourt/imlabs-check-in-calls-with-ale?uuid=7355cad6-70ea-410d-b80a-1241bd47e2cb" target="_blank">Alejandra</a>
                     </div>
                 </div>
             </div>
 
             <div class="forms-section-container">
                 <div class="save-all-section" style="padding-bottom: 40px;">
+                    <button class="btn btn-secondary" id="backToOnboardingBtn" style="margin-left: 12px;">
+                        ← Back to Onboarding
+                    </button>
                     <button class="btn btn-primary btn-large" id="submitAdsBtn" style="background: var(--gradient-ad);">
                         <span class="btn-text">
                             Submit All Ad Requests
@@ -207,9 +212,7 @@
                         </span>
                         <span class="btn-loader" style="display: none;"></span>
                     </button>
-                    <button class="btn btn-secondary" id="backToOnboardingBtn" style="margin-left: 12px;">
-                        ← Back to Onboarding
-                    </button>
+                    
                 </div>
             </div>
         </section>
@@ -282,7 +285,15 @@
                             </div>
                         </div>
                     </div>
-
+                    <div class="form-field">
+                        <label class="form-label">Account Manager</label>
+                        <input 
+                            type="text" 
+                            name="accountManager" 
+                            class="form-input" 
+                            placeholder="Account manager name"
+                        >
+                    </div>
                     <div class="form-field">
                         <label class="form-label">Store Owner *</label>
                         <input 
@@ -293,9 +304,8 @@
                             placeholder="Store owner name"
                         >
                     </div>
-
                     <div class="form-field">
-                        <label class="form-label">Owner's Email</label>
+                        <label class="form-label">Email</label>
                         <input 
                             type="email" 
                             name="ownerEmail" 
@@ -303,9 +313,8 @@
                             placeholder="Owner's email address"
                         >
                     </div>
-
                     <div class="form-field">
-                        <label class="form-label">Owner's Mobile Number</label>
+                        <label class="form-label">Mobile Number</label>
                         <input 
                             type="tel" 
                             name="ownerMobile" 
@@ -313,17 +322,15 @@
                             placeholder="Owner's mobile number"
                         >
                     </div>
-
                     <div class="form-field">
-                        <label class="form-label">Account Manager</label>
+                        <label class="form-label">Store Manager Info</label>
                         <input 
                             type="text" 
-                            name="accountManager" 
+                            name="manager" 
                             class="form-input" 
-                            placeholder="Account manager name"
+                            placeholder="Manager name"
                         >
                     </div>
-
                     <div class="form-field">
                         <label class="form-label">Are you a MCO?</label>
                         <input 
@@ -333,26 +340,6 @@
                             placeholder="Are you a MCO?"
                         >
                     </div>
-
-                    <div class="form-field">
-                        <label class="form-label">Store Type</label>
-                        <select name="storeType" class="form-select">
-                            <option value="">Select store type</option>
-                            <option value="Traditional">Traditional</option>
-                            <option value="Non-traditional">Non-traditional</option>
-                        </select>
-                    </div>
-
-                    <div class="form-field">
-                        <label class="form-label">Preferred Name for Ads</label>
-                        <input 
-                            type="text" 
-                            name="adsAddress" 
-                            class="form-input" 
-                            placeholder="Full ADS address"
-                        >
-                    </div>
-
                     <div class="form-field">
                         <label class="form-label">Mailbox Color *</label>
                         <select name="mailboxColor" class="form-select" required>
@@ -363,7 +350,32 @@
                             <option value="No mailbox">No Mailbox</option>
                         </select>
                     </div>
-
+                    <div class="form-field">
+                        <label class="form-label">Time-saving Kiosk</label>
+                        <select name="timeSavingKiosk" class="form-select">
+                            <option value="">Select option</option>
+                            <option value="6">Yes</option>
+                            <option value="4">No</option>
+                            <option value="7">No (Yet)</option>
+                        </select>
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label">Store Type</label>
+                        <select name="storeType" class="form-select">
+                            <option value="">Select store type</option>
+                            <option value="Traditional">Traditional</option>
+                            <option value="Non-traditional">Non-traditional</option>
+                        </select>
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label">Preferred Name for Ads</label>
+                        <input 
+                            type="text" 
+                            name="adsAddress" 
+                            class="form-input" 
+                            placeholder="Full ADS address"
+                        >
+                    </div>
                     <div class="form-field">
                         <label class="form-label">Co-op Board Member</label>
                         <input 
@@ -374,28 +386,7 @@
                             placeholder="Co-op Board Member"
                         >
                     </div>
-
-                    <div class="form-field">
-                        <label class="form-label">Store Manager Info</label>
-                        <input 
-                            type="text" 
-                            name="manager" 
-                            class="form-input" 
-                            placeholder="Manager name"
-                        >
-                    </div>
-
-                    <div class="form-field">
-                        <label class="form-label">Time-saving Kiosk</label>
-                        <select name="timeSavingKiosk" class="form-select">
-                            <option value="">Select option</option>
-                            <option value="6">Yes</option>
-                            <option value="4">No</option>
-                            <option value="7">No (Yet)</option>
-                        </select>
-                    </div>
                 </div>
-
                 <!-- == Profit Center Info == -->
                 <div class="form-group">
                     <div class="form-field">
@@ -408,7 +399,6 @@
                         ></textarea>
                     </div>
                 </div>
-
                 <!-- == Additional Information == -->
                 <div class="form-group">
                     <div class="form-field">
