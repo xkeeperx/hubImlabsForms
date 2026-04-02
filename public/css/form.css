@@ -1016,6 +1016,11 @@ body {
     font-size: var(--font-size-sm);
 }
 
+.forms-section-hint2 {
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-base);
+}
+
 /* The wrapper controls overflow so scrollbar appears nicely - Full Width */
 .forms-scroll-wrapper {
     overflow-x: auto;
