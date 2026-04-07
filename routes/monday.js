@@ -209,6 +209,102 @@ router.get("/stores", async (req, res) => {
 });
 
 /**
+ * GET /api/monday/autocomplete
+ * Searches stores by partial text match and status
+ */
+router.get("/autocomplete", async (req, res) => {
+  try {
+    const queryStr = req.query.query?.toLowerCase() || "";
+
+    if (!queryStr || queryStr.length < 4) {
+      return res.json({ success: true, count: 0, stores: [] });
+    }
+
+    const query = `
+      query {
+        items_page_by_column_values(
+          board_id: ${MONDAY_BOARD_ID}
+          columns: [
+            { 
+              column_id: "${MONDAY_STATUS_COLUMN_ID}", 
+              column_values: ["Pending Kick-Off", "Kick Off Booked", "Kick-Off Booked"] 
+            }
+          ]
+          limit: 500
+        ) {
+          items {
+            id
+            name
+            column_values(ids: ["${MONDAY_STATUS_COLUMN_ID}", "${MONDAY_STORE_COLUMN_ID}"]) {
+              id
+              text
+              value
+            }
+          }
+        }
+      }
+    `;
+
+    const response = await axios.post(
+      MONDAY_API_URL,
+      { query },
+      { headers: getMondayHeaders() }
+    );
+
+    const items = response.data.data?.items_page_by_column_values?.items || [];
+
+    // Filter items by status again (safety check) and by substring match
+    const pendingItems = items.filter((item) => {
+      const statusColumn = item.column_values.find(
+        (col) => col.id === MONDAY_STATUS_COLUMN_ID,
+      );
+      if (!statusColumn || !statusColumn.text) return false;
+      const statusText = statusColumn.text.trim();
+      const isValidStatus = (
+        statusText === "Pending Kick-Off" ||
+        statusText === "Kick Off Booked" ||
+        statusText === "Kick-Off Booked"
+      );
+      if (!isValidStatus) return false;
+
+      const storeColumn = item.column_values.find(
+        (col) => col.id === MONDAY_STORE_COLUMN_ID,
+      );
+      const storeText = storeColumn?.text || item.name;
+      const searchableText = `${storeText} ${item.name}`.toLowerCase();
+      
+      return searchableText.includes(queryStr);
+    });
+
+    const stores = pendingItems.map((item) => {
+      const storeColumn = item.column_values.find(
+        (col) => col.id === MONDAY_STORE_COLUMN_ID,
+      );
+      const statusColumn = item.column_values.find(
+        (col) => col.id === MONDAY_STATUS_COLUMN_ID,
+      );
+
+      const storeText = storeColumn?.text || item.name;
+
+      return {
+        id: item.id,
+        value: storeText,
+        label: `${storeText} - ${item.name} (${statusColumn?.text || ""})`,
+      };
+    });
+
+    return res.json({
+      success: true,
+      count: stores.length,
+      stores: stores,
+    });
+  } catch (error) {
+    console.error("Error autocomplete stores:", error.response?.data || error.message);
+    return res.status(500).json({ success: false, message: "Error autocomplete stores." });
+  }
+});
+
+/**
  * GET /api/monday/item/:itemId
  * Fetches all form-relevant column values for a specific item (for prefilling)
  */

@@ -45,14 +45,20 @@
                         <h2 class="search-title">Search Store</h2>
                         <p class="search-description">Select a store from the dropdown to add it to your selection</p>
                         
-                        <form class="search-form" id="searchForm">
+                        <form class="search-form" id="searchForm" style="flex-direction: column; max-width: 400px; margin-left: auto; margin-right: auto;">
                             <div class="search-input-wrapper">
                                 <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <circle cx="11" cy="11" r="8"/>
                                     <path d="M21 21l-4.35-4.35"/>
                                 </svg>
+                                <input type="text" id="searchInput" class="search-input" autocomplete="off" placeholder="Type at least 4 characters to search...">
+                            </div>
+                            <div class="search-input-wrapper" id="storeSelectWrapper" style="display: none;">
+                                <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M4 6h16M4 12h16M4 18h16"/>
+                                </svg>
                                 <select id="storeInput" class="search-input" autocomplete="off">
-                                    <option value="">Select a store</option>
+                                    <option value="">Awaiting search...</option>
                                 </select>
                             </div>
                         </form>
@@ -314,7 +320,7 @@
                         >
                     </div>
                     <div class="form-field">
-                        <label class="form-label">Mobile Number</label>
+                        <label class="form-label">Mobile Number (only numbers)</label>
                         <input 
                             type="tel" 
                             name="ownerMobile" 

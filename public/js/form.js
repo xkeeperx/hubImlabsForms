@@ -118,7 +118,6 @@ document.addEventListener('DOMContentLoaded', () => {
     initSelectedStoresPanel();
     initFormsSection();
     initAdFormsSection();
-    loadStores();
     loadAdReferences();
 });
 function initAdFormsSection() {
@@ -147,45 +146,6 @@ function initNavbar() {
             el.navLinks.classList.remove('active');
         });
     });
-}
-
-// ============================================
-// Load stores on page load
-// ============================================
-async function loadStores() {
-    if (state.isSearching) return;
-    state.isSearching = true;
-    showStatusMessage('Loading stores...', 'info');
-
-    try {
-        const response = await fetch('/api/monday/stores');
-        const data = await response.json();
-
-        if (data.success && data.stores.length > 0) {
-            state.stores = data.stores;
-
-            // Clear existing options except first placeholder
-            while (el.storeInput.options.length > 1) {
-                el.storeInput.remove(1);
-            }
-
-            data.stores.forEach(store => {
-                const option = document.createElement('option');
-                option.value = store.value;
-                option.dataset.id = store.id;
-                option.textContent = store.label;
-                el.storeInput.appendChild(option);
-            });
-
-            showStatusMessage(`${data.stores.length} stores available`, 'success');
-        } else {
-            showStatusMessage(data.message || 'No stores found with pending status.', 'error');
-        }
-    } catch (err) {
-        showStatusMessage('Error loading stores. Please try again.', 'error');
-    } finally {
-        state.isSearching = false;
-    }
 }
 
 // ============================================
@@ -219,12 +179,32 @@ async function loadAdReferences() {
 }
 
 // ============================================
-// Search Form: select dropdown triggers preview
+// Autocomplete logic for Store Input
 // ============================================
-function initSearchForm() {
-    if (!el.storeInput) return;
+let debounceTimeout = null;
 
-    el.storeInput.addEventListener('change', async (e) => {
+function initSearchForm() {
+    const searchInput = document.getElementById('searchInput');
+    const storeInputSelect = document.getElementById('storeInput');
+    const storeSelectWrapper = document.getElementById('storeSelectWrapper');
+
+    if (!searchInput || !storeInputSelect) return;
+
+    searchInput.addEventListener('input', (e) => {
+        const queryStr = e.target.value.trim();
+        
+        if (queryStr.length >= 4) {
+            clearTimeout(debounceTimeout);
+            debounceTimeout = setTimeout(() => {
+                fetchAutocompleteStores(queryStr);
+            }, 500); // 500ms debounce
+        } else {
+            hideStorePreview();
+            storeSelectWrapper.style.display = 'none';
+        }
+    });
+
+    storeInputSelect.addEventListener('change', async (e) => {
         const storeValue = e.target.value.trim();
         if (storeValue) {
             await previewStore(storeValue);
@@ -232,6 +212,43 @@ function initSearchForm() {
             hideStorePreview();
         }
     });
+}
+
+async function fetchAutocompleteStores(queryStr) {
+    if (state.isSearching) return;
+    showStatusMessage('Searching stores...', 'info');
+
+    try {
+        const response = await fetch(`/api/monday/autocomplete?query=${encodeURIComponent(queryStr)}`);
+        const data = await response.json();
+        
+        const storeInputSelect = document.getElementById('storeInput');
+        const storeSelectWrapper = document.getElementById('storeSelectWrapper');
+
+        // Reset the select dropdown
+        while (storeInputSelect.options.length > 1) {
+            storeInputSelect.remove(1);
+        }
+        storeInputSelect.options[0].textContent = "Select a store";
+        storeInputSelect.value = "";
+
+        if (data.success && data.stores && data.stores.length > 0) {
+            state.stores = data.stores; // Save to state so previewStore can find them
+            data.stores.forEach(store => {
+                const option = document.createElement('option');
+                option.value = store.value;
+                option.textContent = store.label;
+                storeInputSelect.appendChild(option);
+            });
+            storeSelectWrapper.style.display = 'block';
+            showStatusMessage(`${data.stores.length} store(s) found`, 'success');
+        } else {
+            storeSelectWrapper.style.display = 'none';
+            showStatusMessage('No matching stores found.', 'error');
+        }
+    } catch (err) {
+        showStatusMessage('Error fetching stores.', 'error');
+    }
 }
 
 async function previewStore(storeValue) {
@@ -566,7 +583,15 @@ async function submitAll() {
                 } else if (fieldName === 'timeSavingKiosk') {
                     fields[colId] = { index: parseInt(val) };
                 } else if (fieldName === 'ownerMobile') {
-                    fields[colId] = { phone: val, countryShortName: "US" }; // Phone columns expect object
+                    let phoneVal = val;
+                    if (phoneVal && !phoneVal.startsWith('+')) {
+                        if (phoneVal.length === 11 && phoneVal.startsWith('1')) {
+                            phoneVal = `+${phoneVal}`;
+                        } else {
+                            phoneVal = `+1${phoneVal}`;
+                        }
+                    }
+                    fields[colId] = { phone: phoneVal, countryShortName: "US" }; // Phone columns expect object
                 } else {
                     fields[colId] = val; // Text, person (via parsing usually), etc.
                 }
@@ -594,6 +619,15 @@ async function submitAll() {
         const data = await response.json();
 
         if (data.success || (data.results && data.results.some(r => r.success))) {
+            // Check if some stores had errors even though others succeeded
+            const failedStores = (data.results || []).filter(r => !r.success);
+            if (failedStores.length > 0) {
+                const errorDetails = failedStores.map(r => 
+                    `• ${r.storeName || r.itemId}: ${r.message || 'Unknown error'}`
+                ).join('\n');
+                alert(`⚠️ Some stores had errors and were NOT saved:\n\n${errorDetails}\n\nPlease review and correct the data for these stores.`);
+            }
+
             // Build per-store results summary
             const details = (data.results || []).map(r => {
                 const icon = r.success ? '✅' : '❌';
@@ -613,10 +647,19 @@ async function submitAll() {
                 showStatusMessage('Onboarding saved. Please fill out the Ad Requests.', 'success');
             }, 1000);
         } else {
+            // ALL stores failed
+            const errorDetails = (data.results || []).map(r => 
+                `• ${r.storeName || r.itemId}: ${r.message || 'Unknown error'}`
+            ).join('\n');
+            const alertMsg = errorDetails 
+                ? `❌ Error saving data. None of the stores were saved:\n\n${errorDetails}\n\nPlease review and correct the data.`
+                : `❌ Error saving data: ${data.message || 'Unknown error'}\n\nPlease review and correct the data.`;
+            alert(alertMsg);
             showStatusMessage(data.message || 'Error saving data. Please try again.', 'error');
         }
     } catch (err) {
         console.error('Error saving:', err);
+        alert(`❌ Network or server error while saving:\n\n${err.message || 'Unknown error'}\n\nPlease check your connection and try again.`);
         showStatusMessage('Error saving data. Please try again.', 'error');
     } finally {
         state.isSaving = false;
