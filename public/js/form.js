@@ -583,15 +583,17 @@ async function submitAll() {
                 } else if (fieldName === 'timeSavingKiosk') {
                     fields[colId] = { index: parseInt(val) };
                 } else if (fieldName === 'ownerMobile') {
-                    let phoneVal = val;
-                    if (phoneVal && !phoneVal.startsWith('+')) {
-                        if (phoneVal.length === 11 && phoneVal.startsWith('1')) {
+                    let phoneVal = val.replace(/\D/g, ''); // leave only digits
+                    if (phoneVal) {
+                        if (phoneVal.length === 10) {
+                            phoneVal = `+1${phoneVal}`;
+                        } else if (phoneVal.length === 11 && phoneVal.startsWith('1')) {
                             phoneVal = `+${phoneVal}`;
                         } else {
                             phoneVal = `+1${phoneVal}`;
                         }
                     }
-                    fields[colId] = { phone: phoneVal, countryShortName: "US" }; // Phone columns expect object
+                    fields[colId] = { phone: phoneVal, countryShortName: "US" }; // Phone columns expect object 
                 } else {
                     fields[colId] = val; // Text, person (via parsing usually), etc.
                 }
@@ -686,7 +688,9 @@ function getMonthIndex(val) {
 
 function validateMonthSelection(select) {
     const errorDiv = select.parentElement.querySelector('.month-error-message');
-    if (!select.value) {
+    const selectedValues = Array.from(select.selectedOptions).map(o => o.value);
+    
+    if (selectedValues.length === 0) {
         if (errorDiv) errorDiv.style.display = 'none';
         return;
     }
@@ -694,14 +698,18 @@ function validateMonthSelection(select) {
     const now = new Date();
     const curMonth = now.getMonth();
     const curDay = now.getDate();
-    const selMonth = getMonthIndex(select.value);
 
     // Business rule: If past month OR (current month AND day > 10)
     let isInvalid = false;
-    if (selMonth < curMonth) {
-        isInvalid = true;
-    } else if (selMonth === curMonth && curDay > 10) {
-        isInvalid = true;
+    for (const val of selectedValues) {
+        const selMonth = getMonthIndex(val);
+        if (selMonth < curMonth) {
+            isInvalid = true;
+            break;
+        } else if (selMonth === curMonth && curDay > 10) {
+            isInvalid = true;
+            break;
+        }
     }
 
     if (isInvalid) {
@@ -785,23 +793,35 @@ async function submitAdRequests() {
             const name = input.name;
             if (!name) return;
 
-            let val = '';
-            if (input.type === 'checkbox') {
+            let val;
+            if (input.tagName === 'SELECT' && input.multiple) {
+                val = Array.from(input.selectedOptions).map(o => o.value);
+            } else if (input.type === 'checkbox') {
                 val = input.checked;
             } else {
                 val = input.value.trim();
             }
 
             // All fields in Form 2 are mandatory per user request
-            if (input.hasAttribute('required') && !val && input.type !== 'checkbox') {
-                isValid = false;
-                input.classList.add('error');
+            if (input.hasAttribute('required') && input.type !== 'checkbox') {
+                const isEmpty = Array.isArray(val) ? val.length === 0 : !val;
+                if (isEmpty) {
+                    isValid = false;
+                    input.classList.add('error');
+                }
             }
 
             fields[name] = val;
         });
 
-        adsPayload.push({ itemId, storeName, fields });
+        if (Array.isArray(fields.month) && fields.month.length > 0) {
+            fields.month.forEach(m => {
+                const clonedFields = { ...fields, month: m };
+                adsPayload.push({ itemId, storeName, fields: clonedFields });
+            });
+        } else {
+            adsPayload.push({ itemId, storeName, fields });
+        }
     });
 
     if (!isValid) {
@@ -848,15 +868,24 @@ async function submitAdRequests() {
 // Validation helpers
 // ============================================
 function validateField(field) {
-    const value = field.value.trim();
     field.classList.remove('error', 'success');
 
-    if (field.hasAttribute('required') && !value) {
+    let value;
+    let isEmpty = false;
+    if (field.tagName === 'SELECT' && field.multiple) {
+        value = Array.from(field.selectedOptions).map(o => o.value);
+        isEmpty = value.length === 0;
+    } else {
+        value = field.value.trim();
+        isEmpty = !value;
+    }
+
+    if (field.hasAttribute('required') && isEmpty) {
         field.classList.add('error');
         return false;
     }
 
-    if (field.type === 'email' && value) {
+    if (field.type === 'email' && value && !isEmpty) {
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
             field.classList.add('error');
             return false;
