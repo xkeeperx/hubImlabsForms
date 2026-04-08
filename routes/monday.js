@@ -1000,6 +1000,10 @@ router.get("/ad-references", async (req, res) => {
             items {
               id
               name
+              assets {
+                public_url
+                file_extension
+              }
               column_values {
                 id
                 text
@@ -1018,10 +1022,32 @@ router.get("/ad-references", async (req, res) => {
 
     const items = response.data.data.boards[0].items_page.items;
     
-    // Filter by "Approved" regardless of which column contains it
     const approvedItems = items
       .filter(item => item.column_values.some(col => col.text && col.text.toLowerCase() === 'approved'))
-      .map(item => ({ id: item.id, name: item.name }));
+      .map(item => {
+        let mediaUrl = null;
+        let mediaType = null;
+        
+        if (item.assets && item.assets.length > 0) {
+          const asset = item.assets[0];
+          mediaUrl = asset.public_url || null;
+          if (mediaUrl) {
+            const ext = (asset.file_extension || '').toLowerCase();
+            if (ext.match(/^\.?(mp4|webm|ogg|mov)$/)) {
+              mediaType = 'video';
+            } else {
+              mediaType = 'image';
+            }
+          }
+        }
+
+        return { 
+          id: item.id, 
+          name: item.name,
+          mediaUrl,
+          mediaType
+        };
+      });
 
     res.json({ success: true, references: approvedItems });
   } catch (error) {

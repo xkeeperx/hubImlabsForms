@@ -169,6 +169,10 @@ async function loadAdReferences() {
                     const option = document.createElement('option');
                     option.value = ref.id;
                     option.textContent = ref.name;
+                    if (ref.mediaUrl) {
+                        option.dataset.mediaUrl = ref.mediaUrl;
+                        option.dataset.mediaType = ref.mediaType;
+                    }
                     adRefSelect.appendChild(option);
                 });
             }
@@ -756,6 +760,9 @@ function renderAdForms() {
             if (field.name === 'month') {
                 field.addEventListener('change', () => validateMonthSelection(field));
             }
+            if (field.name === 'adRef') {
+                field.addEventListener('change', (e) => updateAdRefPreview(e.target));
+            }
         });
         el.adFormsContainer.appendChild(clone);
     });
@@ -937,4 +944,27 @@ function setButtonLoading(button, isLoading) {
     button.disabled = isLoading;
     if (btnText) btnText.style.display = isLoading ? 'none' : 'flex';
     if (btnLoader) btnLoader.style.display = isLoading ? 'block' : 'none';
+}
+
+function updateAdRefPreview(selectElement) {
+    const container = selectElement.parentElement.querySelector('.ad-preview-container');
+    if (!container) return;
+    
+    const selectedOption = selectElement.options[selectElement.selectedIndex];
+    const mediaUrl = selectedOption ? selectedOption.dataset.mediaUrl : null;
+    const mediaType = selectedOption ? selectedOption.dataset.mediaType : null;
+
+    if (!mediaUrl) {
+        container.style.display = 'none';
+        container.innerHTML = '';
+        return;
+    }
+
+    container.style.display = 'block';
+    
+    if (mediaType === 'video') {
+        container.innerHTML = `<video src="${mediaUrl}" controls autoplay muted loop style="max-width: 100%; max-height: 250px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);"></video>`;
+    } else {
+        container.innerHTML = `<img src="${mediaUrl}" alt="Preview" style="max-width: 100%; max-height: 250px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); object-fit: contain;">`;
+    }
 }
