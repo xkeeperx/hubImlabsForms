@@ -777,8 +777,8 @@ async function submitAdRequests() {
 
     const tickbox = document.querySelector('input[name="tickbox"]');
     if (tickbox && !tickbox.checked) {
-        showStatusMessage('No puede guardar sin confirmar la claridad de su paquete.', 'error');
-        alert('No puede guardar. Debe confirmar que tiene claridad sobre lo que su paquete incluye.');
+        showStatusMessage('It cannot be saved. You must confirm that you clearly understand what your package includes.', 'error');
+        alert('It cannot be saved. You must confirm that you clearly understand what your package includes.');
         return;
     }
 

@@ -10,6 +10,7 @@ const MONDAY_STATUS_COLUMN_ID = process.env.MONDAY_STATUS_COLUMN_ID;
 const MONDAY_STATUS_VALUE = process.env.MONDAY_STATUS_VALUE;
 const MONDAY_STORE_COLUMN_ID = process.env.MONDAY_STORE_COLUMN_ID;
 const MONDAY_ADS_BOARD_ID = process.env.MONDAY_ADS_BOARD_ID;
+const MONDAY_ADS_STORE_NUMBER_COLUMN_ID = process.env.MONDAY_ADS_STORE_NUMBER_COLUMN_ID;
 
 // Base URL for Monday.com API
 const MONDAY_API_URL = "https://api.monday.com/v2";
@@ -871,6 +872,12 @@ router.post("/save-ads", async (req, res) => {
     if (!ADS_BOARD_ID) {
       return res.status(500).json({ success: false, message: "ADS_BOARD_ID not configured in environment" });
     }
+    if (!MONDAY_ADS_STORE_NUMBER_COLUMN_ID) {
+      return res.status(500).json({
+        success: false,
+        message: "MONDAY_ADS_STORE_NUMBER_COLUMN_ID not configured in environment",
+      });
+    }
 
     if (!ads || !Array.isArray(ads)) {
       return res.status(400).json({ success: false, message: "Invalid payload: 'ads' array required" });
@@ -878,14 +885,28 @@ router.post("/save-ads", async (req, res) => {
 
     console.log(`[DEBUG] Processing ${ads.length} ad requests...`);
     const results = [];
+    const storeNumberRelationColumnId = MONDAY_ADS_STORE_NUMBER_COLUMN_ID;
 
     for (const adItem of ads) {
-      const { storeName, fields } = adItem;
+      const { itemId, storeName, fields } = adItem;
       const storeNumber = fields.storeNumber || "Unknown";
+      const sourceStoreItemId = parseInt(itemId, 10);
 
       // Helper to format values based on Monday column type
       // Format: { column_id: value_object }
       const columnValues = {};
+
+      if (isNaN(sourceStoreItemId)) {
+        results.push({
+          success: false,
+          storeName,
+          message: "Missing or invalid source store itemId for Store Number relation",
+        });
+        continue;
+      }
+
+      // Link this ad request back to the source store item from form 1.
+      columnValues[storeNumberRelationColumnId] = { item_ids: [sourceStoreItemId] };
       
       // 1. Identification (usually the name of the item, but if you have a column too...)
       // The name of the item is handled by item_name in the mutation below.
