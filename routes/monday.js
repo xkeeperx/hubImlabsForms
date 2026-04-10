@@ -887,6 +887,38 @@ router.post("/save-ads", async (req, res) => {
     const results = [];
     const storeNumberRelationColumnId = MONDAY_ADS_STORE_NUMBER_COLUMN_ID;
 
+    const PROFIT_CENTER_LABELS = {
+      "0": "MB + BNF",
+      "7": "MB + BNF + PROMO",
+      "1": "PR",
+      "8": "PR + PROMO",
+      "3": "PACK AND SHIP",
+      "10": "PCK & SHIP + PROMO",
+      "9": "AIR SHIPPING",
+      "2": "RETURNS",
+      "11": "NOTARY",
+      "13": "SHR",
+      "4": "NOW OPEN",
+      "12": "ONE STOP SHOP",
+      "6": "OTHER",
+      "14": "FREIGHT",
+    };
+
+    const MONTH_LABELS = {
+      "0": "January",
+      "1": "February",
+      "2": "March",
+      "3": "April",
+      "4": "May",
+      "6": "June",
+      "7": "July",
+      "8": "August",
+      "9": "September",
+      "10": "October",
+      "11": "November",
+      "12": "December",
+    };
+
     for (const adItem of ads) {
       const { itemId, storeName, fields } = adItem;
       const storeNumber = fields.storeNumber || "Unknown";
@@ -967,7 +999,7 @@ router.post("/save-ads", async (req, res) => {
 
       const variables = {
         boardId: ADS_BOARD_ID,
-        itemName: `Ad Request - ${storeName} (#${storeNumber})`,
+        itemName: `${storeName} - ${PROFIT_CENTER_LABELS[String(fields.profitCenter)] || fields.profitCenter || "Unknown Profit"} - ${MONTH_LABELS[String(fields.month)] || fields.month || "Unknown Month"}`,
         columnValues: JSON.stringify(columnValues)
       };
 

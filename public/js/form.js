@@ -105,7 +105,10 @@ const el = {
     successSection:      document.getElementById('successSection'),
     successMessage:      document.getElementById('successMessage'),
     successDetails:      document.getElementById('successDetails'),
-    formTemplate:        document.getElementById('formTemplate')
+    formTemplate:        document.getElementById('formTemplate'),
+    imageLightbox:       document.getElementById('imageLightbox'),
+    imageLightboxImg:    document.getElementById('imageLightboxImg'),
+    imageLightboxClose:  document.getElementById('imageLightboxClose')
 };
 
 // ============================================
@@ -118,6 +121,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initSelectedStoresPanel();
     initFormsSection();
     initAdFormsSection();
+    initImageLightbox();
     loadAdReferences();
 });
 function initAdFormsSection() {
@@ -553,6 +557,7 @@ async function submitAll() {
 
     // Validate all forms
     let isValid = true;
+    let firstInvalidField = null;
     const storesPayload = [];
 
     const formCards = el.formsContainer.querySelectorAll('.store-form-card');
@@ -562,13 +567,17 @@ async function submitAll() {
 
         // Validate required fields
         card.querySelectorAll('[required]').forEach(field => {
-            if (!validateField(field)) isValid = false;
+            if (!validateField(field)) {
+                isValid = false;
+                if (!firstInvalidField) firstInvalidField = field;
+            }
         });
 
         // Validate account state specifically
         const accountStateInput = card.querySelector('[name="accountState"]');
         if (accountStateInput && !validateAccountState(accountStateInput)) {
             isValid = false;
+            if (!firstInvalidField) firstInvalidField = accountStateInput;
         }
 
         // Collect form fields and map to Monday column IDs
@@ -609,6 +618,7 @@ async function submitAll() {
 
     if (!isValid) {
         showStatusMessage('Please complete all required fields correctly in all forms.', 'error');
+        focusInvalidField(firstInvalidField);
         return;
     }
 
@@ -783,6 +793,7 @@ async function submitAdRequests() {
     }
 
     let isValid = true;
+    let firstInvalidField = null;
     const adsPayload = [];
     const adCards = el.adFormsContainer.querySelectorAll('.store-ad-card');
 
@@ -815,6 +826,7 @@ async function submitAdRequests() {
                 if (isEmpty) {
                     isValid = false;
                     input.classList.add('error');
+                    if (!firstInvalidField) firstInvalidField = input;
                 }
             }
 
@@ -833,6 +845,7 @@ async function submitAdRequests() {
 
     if (!isValid) {
         showStatusMessage('Please complete all required fields in all ad forms.', 'error');
+        focusInvalidField(firstInvalidField);
         return;
     }
 
@@ -946,6 +959,18 @@ function setButtonLoading(button, isLoading) {
     if (btnLoader) btnLoader.style.display = isLoading ? 'block' : 'none';
 }
 
+function focusInvalidField(field) {
+    if (!field) return;
+    field.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+    setTimeout(() => {
+        try {
+            field.focus({ preventScroll: true });
+        } catch (_) {
+            field.focus();
+        }
+    }, 180);
+}
+
 function updateAdRefPreview(selectElement) {
     const container = selectElement.parentElement.querySelector('.ad-preview-container');
     if (!container) return;
@@ -965,6 +990,41 @@ function updateAdRefPreview(selectElement) {
     if (mediaType === 'video') {
         container.innerHTML = `<video src="${mediaUrl}" controls autoplay muted loop style="max-width: 100%; max-height: 250px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);"></video>`;
     } else {
-        container.innerHTML = `<img src="${mediaUrl}" alt="Preview" style="max-width: 100%; max-height: 250px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); object-fit: contain;">`;
+        container.innerHTML = `<img src="${mediaUrl}" alt="Preview" class="ad-preview-clickable" style="max-width: 100%; max-height: 250px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); object-fit: contain;">`;
+        const img = container.querySelector('img');
+        if (img) {
+            img.addEventListener('click', () => openImageLightbox(mediaUrl));
+        }
     }
+}
+
+function initImageLightbox() {
+    if (!el.imageLightbox || !el.imageLightboxClose) return;
+
+    el.imageLightboxClose.addEventListener('click', closeImageLightbox);
+    el.imageLightbox.addEventListener('click', (e) => {
+        if (e.target === el.imageLightbox) {
+            closeImageLightbox();
+        }
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && el.imageLightbox.style.display !== 'none') {
+            closeImageLightbox();
+        }
+    });
+}
+
+function openImageLightbox(src) {
+    if (!el.imageLightbox || !el.imageLightboxImg || !src) return;
+    el.imageLightboxImg.src = src;
+    el.imageLightbox.style.display = 'flex';
+    el.imageLightbox.setAttribute('aria-hidden', 'false');
+}
+
+function closeImageLightbox() {
+    if (!el.imageLightbox || !el.imageLightboxImg) return;
+    el.imageLightbox.style.display = 'none';
+    el.imageLightbox.setAttribute('aria-hidden', 'true');
+    el.imageLightboxImg.src = '';
 }
